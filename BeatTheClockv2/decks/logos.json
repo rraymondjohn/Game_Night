@@ -1,7 +1,7 @@
 [
   { "type": "image", "src": "assets/img/logos/coca-cola.png", "answer": "Coca-Cola" },
   { "type": "image", "src": "assets/img/logos/nintendo.png", "answer": "Nintendo" },
-  { "type": "image", "src": "assets/img/logos/starbucks.png", "answer": "Starbucks" },
+  { "type": "image", "src": "assets/img/logos/versace.png", "answer": "Versace" },
   { "type": "image", "src": "assets/img/logos/lego.png", "answer": "LEGO" },
   { "type": "image", "src": "assets/img/logos/whataspp.png", "answer": "WhatsApp" },
   { "type": "image", "src": "assets/img/logos/samsung.png", "answer": "Samsung" },
