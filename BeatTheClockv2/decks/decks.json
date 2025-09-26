@@ -5,6 +5,7 @@
     { "id": "flags", "name": "Country Flags", "file": "decks/flags.json" },
     { "id": "anagrams", "name": "Anagrams", "file": "decks/anagrams.json" },
     { "id": "movies", "name": "Movies", "file": "decks/movies.json" },
-    { "id": "logos-medium-hard", "name": "Logos", "file": "decks/logos.json" }
+    { "id": "logos-medium-hard", "name": "Logos", "file": "decks/logos.json" },
+    { "id": "general-knowledge", "name": "General Knowledge", "file": "decks/general-knowledge.json" }
   ]
 }
