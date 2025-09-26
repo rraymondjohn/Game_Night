@@ -3,6 +3,10 @@
     { "id": "mixed", "name": "Mixed Sampler", "file": "decks/mixed.json" },
     { "id": "logos", "name": "Logos", "file": "decks/logos.json" },
     { "id": "artists", "name": "Artists", "file": "decks/artists.json" },
-    { "id": "flags", "name": "Country Flags", "file": "decks/flags.json" }
+    { "id": "flags", "name": "Country Flags", "file": "decks/flags.json" },
+
+    { "id": "anagrams", "name": "Anagrams", "file": "decks/anagrams.json" },
+    { "id": "movies", "name": "Movies", "file": "decks/movies.json" },
+    { "id": "logos-medium-hard", "name": "Logos", "file": "decks/logos.json" }
   ]
 }
