@@ -1,7 +1,6 @@
 [
   { "type": "image", "src": "assets/img/logos/coca-cola.png", "answer": "Coca-Cola" },
   { "type": "image", "src": "assets/img/logos/nintendo.png", "answer": "Nintendo" },
-  { "type": "image", "src": "assets/img/logos/versace.png", "answer": "Versace" },
   { "type": "image", "src": "assets/img/logos/lego.png", "answer": "LEGO" },
   { "type": "image", "src": "assets/img/logos/whataspp.png", "answer": "WhatsApp" },
   { "type": "image", "src": "assets/img/logos/samsung.png", "answer": "Samsung" },
@@ -44,6 +43,7 @@
   { "type": "image", "src": "assets/img/logos/gucci.png", "answer": "Gucci" },
   { "type": "image", "src": "assets/img/logos/dove.png", "answer": "Dove" },
   { "type": "image", "src": "assets/img/logos/reddit.png", "answer": "Reddit" },
+  { "type": "image", "src": "assets/img/logos/versace.png", "answer": "Versace" },
   { "type": "image", "src": "assets/img/logos/timberlands.png", "answer": "Timberland" },
   { "type": "image", "src": "assets/img/logos/louis-vuitton.png", "answer": "Louis Vuitton" },
   { "type": "image", "src": "assets/img/logos/porsche.png", "answer": "Porsche" },
