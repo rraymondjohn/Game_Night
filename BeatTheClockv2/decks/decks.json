@@ -1,0 +1,8 @@
+{
+  "decks": [
+    { "id": "mixed", "name": "Mixed Sampler", "file": "decks/mixed.json" },
+    { "id": "logos", "name": "Logos", "file": "decks/logos.json" },
+    { "id": "artists", "name": "Artists", "file": "decks/artists.json" },
+    { "id": "flags", "name": "Country Flags", "file": "decks/flags.json" }
+  ]
+}

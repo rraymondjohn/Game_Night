@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Beat the Clock</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Beat the Clock</h1>
+      <div class="controls">
+        <!-- Deck controls -->
+        <select id="deckSelect" title="Choose a deck"></select>
+        <button id="btnLoadDeck">Load Deck</button>
+        <button id="btnRandomDeck">Random Deck</button>
+
+        <!-- Team/game controls -->
+        <button id="btnAddTeam" title="Add a new team">+ Team</button>
+        <button id="btnStart" class="primary">Start Game</button>
+        <button id="btnPause">Pause</button>
+        <button id="btnCorrect" class="success">Correct / Next (Enter)</button>
+        <button id="btnSwitch">Switch Turn (Tab)</button>
+        <button id="btnSkip">Skip Prompt (S)</button>
+        <button id="btnReset" class="danger">Reset (R)</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="sidebar">
+        <h2>Teams</h2>
+        <div id="teams"></div>
+        <div class="hint">
+          Keyboard:
+          <ul>
+            <li>Enter: Correct/Next</li>
+            <li>Space: Pause/Resume</li>
+            <li>Tab: Switch Turn</li>
+            <li>S: Skip Prompt</li>
+            <li>R: Reset</li>
+            <li>1-9: Jump to Team</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="stage">
+        <div id="status" class="status"></div>
+        <div id="turnBanner" class="turn-banner"></div>
+        <div id="prompt" class="prompt">
+          <div class="prompt-inner">
+            <div id="promptType" class="prompt-type"></div>
+            <div id="promptContent" class="prompt-content"></div>
+            <div id="promptAnswer" class="prompt-answer"></div>
+          </div>
+        </div>
+        <div class="deck-info"><span id="deckName">Deck: None</span> • <span id="deckCounter">Prompt 0/0</span></div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div>Select a deck above or click Random Deck. Press Start Game to begin.</div>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
