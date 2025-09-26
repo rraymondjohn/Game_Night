@@ -76,10 +76,25 @@ function renderTeams() {
     const row = document.createElement("div");
     row.className = "team-row";
 
+    // Swatch
     const color = document.createElement("div");
     color.className = "team-color";
     color.style.background = team.color;
 
+    // Color picker
+    const colorInput = document.createElement("input");
+    colorInput.type = "color";
+    colorInput.className = "team-color-input";
+    colorInput.value = team.color || "#22d3ee";
+    color.setAttribute("title", "Click to change team color");
+    color.onclick = () => colorInput.click();
+    colorInput.addEventListener("input", () => {
+      team.color = colorInput.value;
+      color.style.background = team.color;
+      renderTurnBanner(); // immediately tint the header
+    });
+
+    // Name
     const name = document.createElement("input");
     name.className = "team-name";
     name.value = team.name;
@@ -98,14 +113,17 @@ function renderTeams() {
       }
     });
 
+    // Timer
     const timer = document.createElement("div");
     timer.className = "timer";
     timer.textContent = msToClock(team.timeMs);
     timer.classList.toggle("danger", team.timeMs <= DANGER_THRESH_MS);
     timer.classList.toggle("warn", team.timeMs <= WARN_THRESH_MS && team.timeMs > DANGER_THRESH_MS);
 
-    row.append(color, name, timer);
+    // IMPORTANT: include the colorInput in the row
+    row.append(color, colorInput, name, timer);
 
+    // Badges
     const badges = document.createElement("div");
     badges.className = "badges";
     const bActive = document.createElement("span");
@@ -116,6 +134,7 @@ function renderTeams() {
     bStatus.textContent = team.eliminated ? "Eliminated" : "In Play";
     badges.append(bActive, bStatus);
 
+    // Actions
     const actions = document.createElement("div");
     actions.className = "team-actions";
     const plus5 = document.createElement("button");
