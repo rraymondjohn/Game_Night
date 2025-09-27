@@ -1,1109 +1,584 @@
-const el = (sel) => document.querySelector(sel);
-const els = (sel) => Array.from(document.querySelectorAll(sel));
+// Beat the Clock - Multi-deck + "Show title before start" support
+// - Multiple decks via decks/decks.json manifest
+// - Deck selector + Random Deck
+// - When a deck loads, show deck title; first item appears only after Start Game
+// - 2+ teams, each with an independent timer that only counts during their turn
+// - Keyboard: Enter=Correct/Next, Space=Pause/Start, Tab=Switch Turn, S=Skip, R=Reset, 1-9=Jump to team
 
-const STORAGE_KEY = "champions_bid_game_v1";
+const DEFAULT_TEAM_TIME_MS = 60_000; // 60 seconds per team
+const WARN_THRESH_MS = 10_000; // 10s warning color + beep
+const DANGER_THRESH_MS = 5_000; // 5s danger color
 
-function uid() {
-  return Math.random().toString(36).slice(2, 10);
+const els = {
+  teams: document.getElementById("teams"),
+  status: document.getElementById("status"),
+  turnBanner: document.getElementById("turnBanner"),
+  promptType: document.getElementById("promptType"),
+  promptContent: document.getElementById("promptContent"),
+  promptAnswer: document.getElementById("promptAnswer"),
+  deckCounter: document.getElementById("deckCounter"),
+  deckName: document.getElementById("deckName"),
+  deckSelect: document.getElementById("deckSelect"),
+  btnLoadDeck: document.getElementById("btnLoadDeck"),
+  btnRandomDeck: document.getElementById("btnRandomDeck"),
+  btnAddTeam: document.getElementById("btnAddTeam"),
+  btnStart: document.getElementById("btnStart"),
+  btnPause: document.getElementById("btnPause"),
+  btnCorrect: document.getElementById("btnCorrect"),
+  btnSwitch: document.getElementById("btnSwitch"),
+  btnSkip: document.getElementById("btnSkip"),
+  btnReset: document.getElementById("btnReset"),
+};
+
+let state = {
+  teams: [],
+  activeTeamIdx: -1,
+  ticking: false,
+  lastTick: 0,
+  deck: [],
+  deckLabel: "None",
+  promptIdx: 0,
+  warnedAt: new Set(),
+  pingedSeconds: new Set(),
+  gameOver: false,
+  manifest: { decks: [] },
+  awaitingStart: false, // When true: show deck title instead of first prompt until Start is pressed
+};
+
+function msToClock(ms) {
+  ms = Math.max(0, Math.floor(ms));
+  const s = Math.ceil(ms / 1000);
+  const mm = Math.floor(s / 60)
+    .toString()
+    .padStart(2, "0");
+  const ss = (s % 60).toString().padStart(2, "0");
+  return `${mm}:${ss}`;
 }
 
-function deepClone(obj) {
-  return JSON.parse(JSON.stringify(obj));
+function createTeam(name, color) {
+  return {
+    id: crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+    name,
+    color,
+    timeMs: DEFAULT_TEAM_TIME_MS,
+    eliminated: false,
+  };
 }
 
-// Topic Bank (curated)
-const TOPIC_BANK = [
-  {
-    category: "Clothing",
-    questions: [
-      "How many shoe brands can you name?",
-      "How many clothing brands can you list?",
-      "How many luxury fashion houses can you name?",
-      "How many sportswear or athleisure brands can you name?",
-      "How many streetwear brands can you list?",
-      "How many denim/jeans brands can you name?",
-      "How many watch brands can you list?",
-      "How many types of hats can you list?",
-      "How many types of jackets or coats can you list?",
-      "How many clothing accessories can you list (belts, scarves, etc.)?",
-      "How many fabric or material types used in clothing can you list?",
-      "How many sneaker models or lines can you name?",
-    ],
-  },
-  {
-    category: "Music",
-    questions: [
-      "How many artists have featured on bbno$ songs?",
-      "How many music genres can you list?",
-      "How many bands can you list?",
-      "How many K-Pop boy or girl groups can you name?",
-      "How many musical instruments can you list?",
-      "How many famous pop artists can you list?",
-      "How many hip-hop producers can you name?",
-      "How many EDM subgenres can you list?",
-      "How many classical composers can you name?",
-      "How many rock subgenres or movements can you list?",
-      "How many famous music festivals can you name?",
-      "How many Grammy Award categories or notable awards can you list?",
-    ],
-  },
-  {
-    category: "Sports",
-    questions: [
-      "How many top-flight soccer/football teams can you name (Premier League, La Liga, etc.)?",
-      "How many sports featured in the Olympics can you list?",
-      "How many NBA teams can you name?",
-      "How many FIFA World Cup host countries can you name?",
-      "How many tennis Grand Slam champions can you list?",
-      "How many track and field events can you list?",
-      "How many martial arts disciplines can you name?",
-      "How many famous athletes can you name?",
-      "How many cricket-playing nations can you name?",
-      "How many Formula 1 constructors or drivers can you list?",
-      "How many positions in common team sports (e.g., soccer, basketball, baseball) can you list?",
-      "How many rugby nations or clubs can you list?",
-    ],
-  },
-  {
-    category: "History",
-    questions: [
-      "How many serial killers or notable criminals can you list?",
-      "How many Presidents, Kings, or Queens can you list (specify country or any)?",
-      "How many ancient civilizations can you name?",
-      "How many famous historical leaders can you name?",
-      "How many world-changing inventions (pre-1900) can you list?",
-      "How many explorers or navigators can you name?",
-      "How many revolutions or major uprisings can you list?",
-      "How many World War II battles or operations can you name?",
-      "How many empires from history can you list?",
-      "How many historical treaties can you name?",
-      "How many Nobel Prize laureates (any category) can you name?",
-      "How many famous landmarks or monuments can you list?",
-    ],
-  },
-  {
-    category: "Geography",
-    questions: [
-      "How many capital cities can you list?",
-      "How many countries in Africa can you name?",
-      "How many countries in Asia can you name?",
-      "How many countries in Europe can you name?",
-      "How many U.S. states can you name?",
-      "How many rivers of the world can you list?",
-      "How many mountain ranges can you list?",
-      "How many islands or archipelagos can you name?",
-      "How many deserts can you name?",
-      "How many national parks can you list (specify country)?",
-      "How many cities with populations over 1 million can you name?",
-      "How many UNESCO World Heritage Sites can you name?",
-    ],
-  },
-  {
-    category: "Transport",
-    questions: [
-      "How many MRT or LRT lines in Singapore can you list?",
-      "How many vehicle brands can you name?",
-      "How many car models from a specific brand can you name (pick a brand)?",
-      "How many airline carriers can you list?",
-      "How many aircraft manufacturers can you name?",
-      "How many motorcycle brands can you name?",
-      "How many train or subway systems around the world can you list?",
-      "How many shipping or cruise lines can you name?",
-      "How many auto parts or systems can you list (engine, drivetrain, etc.)?",
-      "How many traffic signs or road markings can you list?",
-      "How many public transportation modes can you name?",
-      "How many famous car designers or tuning houses can you name?",
-    ],
-  },
-  {
-    category: "Science",
-    questions: [
-      "How many elements from the periodic table can you list?",
-      "How many human body parts can you list?",
-      "How many human bones can you name?",
-      "How many organs in the human body can you list?",
-      "How many planets and major moons can you name?",
-      "How many SI base units and derived units can you list?",
-      "How many famous scientists can you name?",
-      "How many constellations can you list?",
-      "How many physics phenomena or laws can you name?",
-      "How many programming languages can you list?",
-      "How many branches of biology can you name?",
-      "How many chemical compounds common in daily life can you list?",
-    ],
-  },
-  {
-    category: "Food and Drinks",
-    questions: [
-      "How many alcoholic brands can you name?",
-      "How many world cuisines can you list?",
-      "How many fruits can you list?",
-      "How many vegetables can you list?",
-      "How many herbs and spices can you name?",
-      "How many types of pasta can you list?",
-      "How many types of cheese can you name?",
-      "How many coffee drinks or brewing methods can you list?",
-      "How many tea types or styles can you list?",
-      "How many desserts or pastries can you name?",
-      "How many chocolate brands can you name?",
-      "How many fast food chains can you name?",
-    ],
-  },
-  {
-    category: "Cosmetics",
-    questions: [
-      "How many lipstick brands can you list?",
-      "How many skincare brands can you name?",
-      "How many makeup products or items can you list?",
-      "How many perfume houses or fragrance brands can you name?",
-      "How many beauty retailers can you list?",
-      "How many nail polish brands can you name?",
-      "How many K-beauty brands can you name?",
-      "How many makeup brush types can you list?",
-      "How many sunscreen types or filters can you list?",
-      "How many cosmetic ingredients can you name?",
-      "How many haircare brands can you name?",
-      "How many spa or salon treatments can you list?",
-    ],
-  },
-  {
-    category: "Education",
-    questions: [
-      "List out Primary schools, Secondary schools, Universities, or All Schools (specify region).",
-      "How many famous universities worldwide can you name?",
-      "How many fields of study or academic disciplines can you list?",
-      "How many academic degrees or qualifications can you list?",
-      "How many student clubs or campus organizations can you name?",
-      "How many standardized tests or exams can you list?",
-      "How many educational theorists or psychologists can you name?",
-      "How many scholarships or fellowships can you list?",
-      "How many classroom subjects can you list?",
-      "How many learning platforms or MOOCs can you name?",
-      "How many notable lecturers or professors can you name?",
-      "How many school supplies can you list?",
-    ],
-  },
-  {
-    category: "Movies & TV",
-    questions: [
-      "How many movie genres can you list?",
-      "How many famous directors can you name?",
-      "How many Oscar Best Picture winners can you list?",
-      "How many actors or actresses can you name?",
-      "How many long-running TV series can you list?",
-      "How many animated films or studios can you name?",
-      "How many streaming platforms can you list?",
-      "How many film franchises can you name?",
-      "How many classic films (pre-1980) can you list?",
-      "How many famous screenwriters can you name?",
-      "How many cinematographers can you name?",
-      "How many TV networks or channels can you list?",
-    ],
-  },
-];
+function renderTeams() {
+  els.teams.innerHTML = "";
+  state.teams.forEach((team, idx) => {
+    const card = document.createElement("div");
+    card.className = "team-card";
 
-const initialState = () => ({
-  phase: "setup", // setup | round | bidding | listing | result
-  topic: "",
-  question: "",
-  timerEnabled: false,
-  timerSeconds: 60,
-  timerTick: 60,
-  teams: [
-    {
-      id: uid(),
-      name: "Team A",
-      players: [
-        { id: uid(), name: "Alice" },
-        { id: uid(), name: "Ben" },
-        { id: uid(), name: "Cara" },
+    const row = document.createElement("div");
+    row.className = "team-row";
+
+    const color = document.createElement("div");
+    color.className = "team-color";
+    color.style.background = team.color;
+
+    const name = document.createElement("input");
+    name.className = "team-name";
+    name.value = team.name;
+    name.addEventListener("input", () => {
+      team.name = name.value || `Team ${idx + 1}`;
+      renderTurnBanner();
+    });
+
+    const timer = document.createElement("div");
+    timer.className = "timer";
+    timer.textContent = msToClock(team.timeMs);
+    timer.classList.toggle("danger", team.timeMs <= DANGER_THRESH_MS);
+    timer.classList.toggle("warn", team.timeMs <= WARN_THRESH_MS && team.timeMs > DANGER_THRESH_MS);
+
+    row.append(color, name, timer);
+
+    const badges = document.createElement("div");
+    badges.className = "badges";
+    const bActive = document.createElement("span");
+    bActive.className = "badge" + (idx === state.activeTeamIdx && !team.eliminated ? " active" : "");
+    bActive.textContent = idx === state.activeTeamIdx ? "Active" : "Waiting";
+    const bStatus = document.createElement("span");
+    bStatus.className = "badge" + (team.eliminated ? " eliminated" : "");
+    bStatus.textContent = team.eliminated ? "Eliminated" : "In Play";
+    badges.append(bActive, bStatus);
+
+    const actions = document.createElement("div");
+    actions.className = "team-actions";
+    const plus5 = document.createElement("button");
+    plus5.textContent = "+5s";
+    plus5.title = "Add 5 seconds";
+    plus5.onclick = () => {
+      team.timeMs += 5000;
+      renderTeams();
+    };
+    const minus5 = document.createElement("button");
+    minus5.textContent = "-5s";
+    minus5.title = "Remove 5 seconds";
+    minus5.onclick = () => {
+      team.timeMs = Math.max(0, team.timeMs - 5000);
+      renderTeams();
+    };
+    const set60 = document.createElement("button");
+    set60.textContent = "Set 60s";
+    set60.onclick = () => {
+      team.timeMs = 60_000;
+      renderTeams();
+    };
+    const jump = document.createElement("button");
+    jump.textContent = "Make Active";
+    jump.onclick = () => switchToTeam(idx);
+    const remove = document.createElement("button");
+    remove.textContent = "Remove";
+    remove.onclick = () => {
+      const wasActive = state.activeTeamIdx === idx;
+      if (wasActive) pauseTicking();
+      state.teams.splice(idx, 1);
+      if (state.activeTeamIdx >= state.teams.length) state.activeTeamIdx = state.teams.length - 1;
+      renderAll();
+    };
+
+    actions.append(plus5, minus5, set60, jump, remove);
+
+    card.append(row, badges, actions);
+    els.teams.append(card);
+  });
+}
+
+function renderTurnBanner() {
+  const t = state.teams[state.activeTeamIdx];
+  els.turnBanner.textContent = t ? `${t.name}'s Turn` : "No active team";
+}
+
+function renderPrompt() {
+  const deckSize = state.deck.length;
+  // When awaitingStart, display index as 1 (first prompt will show after Start)
+  const idxDisplay = state.awaitingStart ? (deckSize ? 1 : 0) : Math.min(state.promptIdx + 1, deckSize);
+  els.deckCounter.textContent = `Prompt ${idxDisplay}/${deckSize}`;
+  els.deckName.textContent = `Deck: ${state.deckLabel}`;
+
+  els.promptType.textContent = "";
+  els.promptContent.innerHTML = "";
+  els.promptAnswer.textContent = "";
+
+  // Show deck title until game starts
+  if (state.awaitingStart) {
+    els.promptType.textContent = "Deck";
+    const div = document.createElement("div");
+    div.className = "text";
+    div.textContent = state.deckLabel || "No deck loaded";
+    els.promptContent.append(div);
+    return;
+  }
+
+  const item = state.deck[state.promptIdx];
+  if (!item) {
+    els.promptType.textContent = "Deck";
+    const div = document.createElement("div");
+    div.className = "text";
+    div.textContent = deckSize ? "No more prompts." : "No deck loaded.";
+    els.promptContent.append(div);
+    return;
+  }
+
+  els.promptType.textContent = item.type === "image" ? "Image" : "Text";
+  if (item.type === "image") {
+    const img = document.createElement("img");
+    img.src = item.src;
+    img.alt = "Prompt image";
+    els.promptContent.append(img);
+  } else {
+    const div = document.createElement("div");
+    div.className = "text";
+    div.textContent = item.text;
+    els.promptContent.append(div);
+  }
+  if (item.answer) {
+    els.promptAnswer.textContent = `Answer: ${item.answer}`;
+    els.promptAnswer.style.visibility = "hidden"; // keep hidden for host-only reveal if desired
+  }
+}
+
+function renderStatus(msg = "") {
+  els.status.textContent = msg;
+}
+
+function renderAll() {
+  renderTeams();
+  renderTurnBanner();
+  renderPrompt();
+}
+
+// Audio cues
+const audioCtx = typeof window.AudioContext !== "undefined" ? new AudioContext() : null;
+function beep(freq = 880, durMs = 150, type = "sine") {
+  if (!audioCtx) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  o.connect(g);
+  g.connect(audioCtx.destination);
+  o.start();
+  g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + durMs / 1000);
+  o.stop(audioCtx.currentTime + durMs / 1000 + 0.01);
+}
+
+function ensureAudioUnlocked() {
+  if (!audioCtx) return;
+  if (audioCtx.state === "suspended") audioCtx.resume();
+}
+
+// Game flow helpers
+function nextAliveTeamIdx(fromIdx) {
+  if (state.teams.length === 0) return -1;
+  for (let i = 1; i <= state.teams.length; i++) {
+    const idx = (fromIdx + i) % state.teams.length;
+    if (!state.teams[idx].eliminated) return idx;
+  }
+  return -1;
+}
+
+function switchToTeam(idx) {
+  pauseTicking();
+  if (idx < 0 || idx >= state.teams.length) return;
+  if (state.teams[idx].eliminated) {
+    renderStatus(`${state.teams[idx].name} is eliminated.`);
+    return;
+  }
+  state.activeTeamIdx = idx;
+  state.warnedAt.delete(idx);
+  state.pingedSeconds.clear();
+  renderAll();
+}
+
+function startTurn() {
+  if (state.gameOver) return;
+  if (!state.deck.length) {
+    renderStatus("No deck loaded. Choose a deck or click Random Deck.");
+    return;
+  }
+  // If we’re on the deck title screen, reveal the first prompt now
+  if (state.awaitingStart) {
+    state.awaitingStart = false;
+    state.promptIdx = 0;
+    renderPrompt();
+  }
+  if (state.activeTeamIdx < 0) {
+    const idx = nextAliveTeamIdx(-1);
+    if (idx === -1) return;
+    state.activeTeamIdx = idx;
+  }
+  state.lastTick = performance.now();
+  state.ticking = true;
+  renderStatus("Running...");
+  renderTurnBanner();
+}
+
+function pauseTicking() {
+  if (!state.ticking) return;
+  tickOnce(); // finalize elapsed time
+  state.ticking = false;
+  renderStatus("Paused.");
+}
+
+function togglePause() {
+  if (state.ticking) pauseTicking();
+  else {
+    ensureAudioUnlocked();
+    startTurn();
+  }
+}
+
+function onCorrectNext() {
+  if (state.gameOver) return;
+  // If still showing title, Start first
+  if (state.awaitingStart) {
+    startTurn();
+    return;
+  }
+  pauseTicking();
+  state.promptIdx = Math.min(state.promptIdx + 1, state.deck.length);
+  const nextIdx = nextAliveTeamIdx(state.activeTeamIdx);
+  if (nextIdx === -1) {
+    renderStatus("No available teams.");
+    renderPrompt();
+    return;
+  }
+  state.activeTeamIdx = nextIdx;
+  renderAll();
+  startTurn();
+}
+
+function onSkipPrompt() {
+  if (state.gameOver) return;
+  // If still showing title, ignore skip and prompt to start
+  if (state.awaitingStart) {
+    renderStatus("Press Start Game to begin.");
+    return;
+  }
+  state.promptIdx = Math.min(state.promptIdx + 1, state.deck.length);
+  renderPrompt();
+}
+
+function onSwitchTurn() {
+  if (state.gameOver) return;
+  const nextIdx = nextAliveTeamIdx(state.activeTeamIdx);
+  if (nextIdx === -1) return;
+  const wasTicking = state.ticking;
+  switchToTeam(nextIdx);
+  if (wasTicking) startTurn();
+}
+
+function endGame(losingTeamIdx) {
+  pauseTicking();
+  state.gameOver = true;
+  const loser = state.teams[losingTeamIdx];
+  renderStatus(`${loser?.name || "A team"} failed to beat the clock. Game over!`);
+  els.turnBanner.textContent = `Game Over`;
+  beep(220, 500, "sawtooth");
+  beep(196, 500, "square");
+}
+
+function resetGame(hard = false) {
+  pauseTicking();
+  state.ticking = false;
+  state.gameOver = false;
+  // Keep the currently selected active team if still valid, otherwise pick first alive
+  if (state.activeTeamIdx < 0 || state.activeTeamIdx >= state.teams.length || state.teams[state.activeTeamIdx]?.eliminated) {
+    state.activeTeamIdx = state.teams.findIndex((t) => !t.eliminated);
+  }
+  state.promptIdx = 0;
+  state.warnedAt.clear();
+  state.pingedSeconds.clear();
+  if (hard) {
+    state.teams.forEach((t) => {
+      t.timeMs = DEFAULT_TEAM_TIME_MS;
+      t.eliminated = false;
+    });
+    state.activeTeamIdx = state.teams.findIndex((t) => !t.eliminated);
+    if (state.activeTeamIdx === -1 && state.teams.length) state.activeTeamIdx = 0;
+  }
+  renderAll();
+  renderStatus("Reset.");
+}
+
+function tickOnce() {
+  const t = state.teams[state.activeTeamIdx];
+  if (!t || t.eliminated) return;
+  const now = performance.now();
+  const delta = now - state.lastTick;
+  state.lastTick = now;
+
+  t.timeMs = Math.max(0, t.timeMs - delta);
+
+  // Warnings
+  if (t.timeMs <= WARN_THRESH_MS && !state.warnedAt.has(state.activeTeamIdx) && !state.gameOver) {
+    state.warnedAt.add(state.activeTeamIdx);
+    beep(880, 160, "square");
+  }
+  const secsLeft = Math.ceil(t.timeMs / 1000);
+  [3, 2, 1].forEach((s) => {
+    const key = `${state.activeTeamIdx}:${s}`;
+    if (secsLeft === s && !state.pingedSeconds.has(key) && !state.gameOver) {
+      state.pingedSeconds.add(key);
+      beep(990, 120, "square");
+    }
+  });
+
+  // Out of time
+  if (t.timeMs <= 0 && !state.gameOver) {
+    t.eliminated = true;
+    endGame(state.activeTeamIdx);
+  }
+
+  renderTeams();
+}
+
+// Decks: manifest + loading
+function populateDeckSelect() {
+  els.deckSelect.innerHTML = "";
+  const decks = state.manifest.decks || [];
+  if (!decks.length) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "No decks found";
+    els.deckSelect.append(opt);
+    els.deckSelect.disabled = true;
+    return;
+  }
+  els.deckSelect.disabled = false;
+
+  decks.forEach((d) => {
+    const opt = document.createElement("option");
+    opt.value = d.id;
+    opt.textContent = d.name;
+    els.deckSelect.append(opt);
+  });
+  els.deckSelect.selectedIndex = 0;
+}
+
+async function loadManifest() {
+  try {
+    const res = await fetch("decks/decks.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data || !Array.isArray(data.decks)) throw new Error('Invalid decks.json format: expected { "decks": [...] }');
+    state.manifest = { decks: data.decks };
+  } catch (e) {
+    console.warn("Failed to load decks/decks.json, using fallback manifest.", e);
+    state.manifest = {
+      decks: [
+        { id: "mixed", name: "Mixed Sampler", file: "decks/mixed.json" },
+        { id: "logos", name: "Logos", file: "decks/logos.json" },
+        { id: "artists", name: "Artists", file: "decks/artists.json" },
+        { id: "flags", name: "Country Flags", file: "decks/flags.json" },
       ],
-      score: 0,
-    },
-    {
-      id: uid(),
-      name: "Team B",
-      players: [
-        { id: uid(), name: "Drew" },
-        { id: uid(), name: "Eve" },
-        { id: uid(), name: "Finn" },
-      ],
-      score: 0,
-    },
-  ],
-  champions: {}, // { [teamId]: playerId }
-  startingRotation: "round-robin", // "round-robin" | "fixed"
-  roundNumber: 1,
-  startingTeamIndex: 0,
-  activeTeamIndex: 0,
-  currentBid: null, // { teamId, amount }
-  lastChallengerTeamId: null,
-  listingTeamId: null,
-  requiredCount: 0,
-  listedItems: [],
-  // New: manual counter
-  listingUseCounter: false,
-  manualCount: 0,
-  forfeits: [], // { round, losingTeamId, note }
+    };
+  } finally {
+    populateDeckSelect();
+  }
+}
+
+async function loadDeckFrom(url, label = "Custom Deck") {
+  try {
+    // Pause if currently running
+    pauseTicking();
+
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("Deck JSON must be an array of prompt items");
+
+    // Sanitize items
+    const sanitized = data.filter(
+      (item) => item && (item.type === "text" || item.type === "image") && ((item.type === "text" && typeof item.text === "string") || (item.type === "image" && typeof item.src === "string"))
+    );
+
+    state.deck = sanitized;
+    state.deckLabel = label;
+    state.promptIdx = 0;
+    state.awaitingStart = true; // show deck title until Start
+    state.gameOver = false;
+
+    renderPrompt();
+    renderStatus(`Loaded deck: ${label}. Press Start Game to begin.`);
+  } catch (e) {
+    console.error("Failed to load deck:", url, e);
+    state.deck = [];
+    state.deckLabel = "None";
+    state.promptIdx = 0;
+    state.awaitingStart = false;
+    renderPrompt();
+    renderStatus(`Failed to load deck (${label}). Check the file path/format.`);
+  }
+}
+
+async function loadDeckById(id) {
+  const d = (state.manifest.decks || []).find((x) => x.id === id);
+  if (!d) {
+    renderStatus("Deck not found in manifest.");
+    return;
+  }
+  await loadDeckFrom(d.file, d.name);
+}
+
+function pickRandomDeckId() {
+  const list = state.manifest.decks || [];
+  if (!list.length) return "";
+  const i = Math.floor(Math.random() * list.length);
+  return list[i].id;
+}
+
+function loop() {
+  if (state.ticking) tickOnce();
+  requestAnimationFrame(loop);
+}
+
+// Events
+els.btnAddTeam.addEventListener("click", () => {
+  const idx = state.teams.length + 1;
+  const palette = ["#22d3ee", "#60a5fa", "#a78bfa", "#f472b6", "#34d399", "#fbbf24", "#ef4444"];
+  const color = palette[(idx - 1) % palette.length];
+  state.teams.push(createTeam(`Team ${idx}`, color));
+  if (state.activeTeamIdx === -1) state.activeTeamIdx = 0;
+  renderAll();
 });
 
-let state = loadState() || initialState();
-let timerInterval = null;
+els.btnStart.addEventListener("click", () => {
+  ensureAudioUnlocked();
+  startTurn(); // startTurn will reveal first prompt if awaitingStart is true
+});
 
-function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
+els.btnPause.addEventListener("click", togglePause);
+els.btnCorrect.addEventListener("click", onCorrectNext);
+els.btnSwitch.addEventListener("click", onSwitchTurn);
+els.btnSkip.addEventListener("click", onSkipPrompt);
+els.btnReset.addEventListener("click", () => resetGame(true));
 
-function setPhase(phase) {
-  state.phase = phase;
-  saveState();
-  render();
-}
-
-function validateSetup() {
-  const teams = state.teams.filter((t) => t.name.trim().length > 0);
-  if (teams.length < 2) return { ok: false, msg: "You need at least 2 teams." };
-  for (const t of teams) {
-    const players = t.players.filter((p) => p.name.trim().length > 0);
-    if (players.length < 3) return { ok: false, msg: `Team "${t.name}" must have at least 3 players.` };
-  }
-  return { ok: true };
-}
-
-function addTeam() {
-  state.teams.push({
-    id: uid(),
-    name: `Team ${String.fromCharCode(65 + state.teams.length)}`,
-    players: [
-      { id: uid(), name: "" },
-      { id: uid(), name: "" },
-      { id: uid(), name: "" },
-    ],
-    score: 0,
-  });
-  saveState();
-  renderTeamsEditor();
-}
-
-function removeTeam(teamId) {
-  state.teams = state.teams.filter((t) => t.id !== teamId);
-  saveState();
-  renderTeamsEditor();
-}
-
-function addPlayer(teamId) {
-  const team = state.teams.find((t) => t.id === teamId);
-  team.players.push({ id: uid(), name: "" });
-  saveState();
-  renderTeamsEditor();
-}
-
-function removePlayer(teamId, playerId) {
-  const team = state.teams.find((t) => t.id === teamId);
-  team.players = team.players.filter((p) => p.id !== playerId);
-  saveState();
-  renderTeamsEditor();
-}
-
-function beginGame() {
-  const val = validateSetup();
-  if (!val.ok) {
-    alert(val.msg);
+els.btnLoadDeck.addEventListener("click", async () => {
+  const id = els.deckSelect.value;
+  if (!id) {
+    renderStatus("No deck selected.");
     return;
   }
-  state.phase = "round";
-  state.roundNumber = 1;
-  state.activeTeamIndex = state.startingTeamIndex;
-  state.topic = "";
-  state.question = "";
-  state.champions = {};
-  state.currentBid = null;
-  state.requiredCount = 0;
-  state.listedItems = [];
-  state.listingUseCounter = false;
-  state.manualCount = 0;
-  state.lastChallengerTeamId = null;
-  state.listingTeamId = null;
-  saveState();
-  render();
-}
+  await loadDeckById(id);
+  // Reset prompt to start; keep timers unless you want a full reset
+  resetGame(false);
+});
 
-function renderTeamsEditor() {
-  const container = el("#teams-editor");
-  container.innerHTML = "";
-  state.teams.forEach((team) => {
-    const div = document.createElement("div");
-    div.className = "team-editor";
-    div.innerHTML = `
-      <div class="team-editor-header">
-        <input class="team-name-input" type="text" value="${escapeHtml(team.name)}" placeholder="Team name" data-team="${team.id}" />
-        <button class="danger btn-remove-team" data-team="${team.id}">Remove</button>
-      </div>
-      <div class="players">
-        ${team.players
-          .map(
-            (p) => `
-          <div class="player-row">
-            <input class="player-name-input" type="text" value="${escapeHtml(p.name)}" placeholder="Player name" data-team="${team.id}" data-player="${p.id}" />
-            <button class="secondary btn-remove-player" data-team="${team.id}" data-player="${p.id}">Remove</button>
-          </div>
-        `
-          )
-          .join("")}
-      </div>
-      <div class="setup-actions">
-        <button class="secondary btn-add-player" data-team="${team.id}">Add Player</button>
-      </div>
-    `;
-    container.appendChild(div);
-  });
-
-  els(".team-name-input").forEach((inp) => {
-    inp.addEventListener("input", (e) => {
-      const team = state.teams.find((t) => t.id === e.target.dataset.team);
-      team.name = e.target.value;
-      saveState();
-      renderScoreboard();
-    });
-  });
-  els(".player-name-input").forEach((inp) => {
-    inp.addEventListener("input", (e) => {
-      const team = state.teams.find((t) => t.id === e.target.dataset.team);
-      const player = team.players.find((p) => p.id === e.target.dataset.player);
-      player.name = e.target.value;
-      saveState();
-    });
-  });
-  els(".btn-remove-team").forEach((btn) =>
-    btn.addEventListener("click", (e) => {
-      removeTeam(e.target.dataset.team);
-    })
-  );
-  els(".btn-add-player").forEach((btn) =>
-    btn.addEventListener("click", (e) => {
-      addPlayer(e.target.dataset.team);
-    })
-  );
-  els(".btn-remove-player").forEach((btn) =>
-    btn.addEventListener("click", (e) => {
-      removePlayer(e.target.dataset.team, e.target.dataset.player);
-    })
-  );
-}
-
-function renderScoreboard() {
-  const sb = el("#scoreboard");
-  sb.innerHTML = "";
-  state.teams.forEach((t, idx) => {
-    const div = document.createElement("div");
-    div.className = "team";
-    div.innerHTML = `
-      <div class="team-header">
-        <div class="team-name">${escapeHtml(t.name)}</div>
-        <div class="team-score">${t.score}</div>
-      </div>
-      <div class="team-info">
-        <small class="muted">Players: ${
-          t.players
-            .filter((p) => p.name.trim())
-            .map((p) => escapeHtml(p.name))
-            .join(", ") || "—"
-        }</small>
-      </div>
-      <div class="team-actions" style="margin-top:8px; display:flex; gap:6px;">
-        <button class="secondary btn-minus" data-team="${t.id}">-1</button>
-        <button class="secondary btn-plus" data-team="${t.id}">+1</button>
-        <span class="badge">${idx === state.startingTeamIndex ? "Starting" : ""}</span>
-      </div>
-    `;
-    sb.appendChild(div);
-  });
-  els(".btn-minus").forEach((b) => b.addEventListener("click", () => adjustScore(b.dataset.team, -1)));
-  els(".btn-plus").forEach((b) => b.addEventListener("click", () => adjustScore(b.dataset.team, 1)));
-}
-
-function adjustScore(teamId, delta) {
-  const t = state.teams.find((t) => t.id === teamId);
-  t.score = Math.max(0, t.score + delta);
-  saveState();
-  renderScoreboard();
-}
-
-function renderChampionsNomination() {
-  const c = el("#champions-nomination");
-  c.innerHTML = "";
-  state.teams.forEach((t) => {
-    const selected = state.champions[t.id] || "";
-    const card = document.createElement("div");
-    card.className = "champion-card";
-    card.innerHTML = `
-      <h3>${escapeHtml(t.name)} Champion</h3>
-      <div class="line">
-        <select class="champion-select" data-team="${t.id}">
-          <option value="" ${selected === "" ? "selected" : ""}>Select player</option>
-          ${t.players
-            .filter((p) => p.name.trim().length > 0)
-            .map(
-              (p) => `
-            <option value="${p.id}" ${selected === p.id ? "selected" : ""}>${escapeHtml(p.name)}</option>
-          `
-            )
-            .join("")}
-        </select>
-        <button class="secondary btn-random-champion" data-team="${t.id}">Random</button>
-      </div>
-    `;
-    c.appendChild(card);
-  });
-  els(".champion-select").forEach((sel) => {
-    sel.addEventListener("change", (e) => {
-      const teamId = e.target.dataset.team;
-      const value = e.target.value || null;
-      if (value) state.champions[teamId] = value;
-      else delete state.champions[teamId];
-      saveState();
-    });
-  });
-  els(".btn-random-champion").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const teamId = btn.dataset.team;
-      const t = state.teams.find((t) => t.id === teamId);
-      const candidates = t.players.filter((p) => p.name.trim().length > 0);
-      if (candidates.length === 0) return;
-      const pick = candidates[Math.floor(Math.random() * candidates.length)].id;
-      state.champions[teamId] = pick;
-      saveState();
-      renderChampionsNomination();
-    });
-  });
-}
-
-function canStartBidding() {
-  if (!state.topic.trim()) return { ok: false, msg: "Topic/Category is required." };
-  for (const t of state.teams) {
-    if (!state.champions[t.id]) return { ok: false, msg: `Please select a Champion for ${t.name}.` };
-  }
-  return { ok: true };
-}
-
-function startBidding() {
-  const ok = canStartBidding();
-  if (!ok.ok) {
-    alert(ok.msg);
+els.btnRandomDeck.addEventListener("click", async () => {
+  const id = pickRandomDeckId();
+  if (!id) {
+    renderStatus("No decks available for random selection.");
     return;
   }
-  state.phase = "bidding";
-  state.currentBid = null;
-  state.activeTeamIndex = state.startingTeamIndex;
-  state.listedItems = [];
-  state.requiredCount = 0;
-  state.listingUseCounter = false;
-  state.manualCount = 0;
-  state.lastChallengerTeamId = null;
-  state.listingTeamId = null;
-  saveState();
-  render();
-}
+  await loadDeckById(id);
+  resetGame(false);
+});
 
-function advanceActiveTeam() {
-  state.activeTeamIndex = (state.activeTeamIndex + 1) % state.teams.length;
-}
-
-function submitBid(amount) {
-  amount = Number(amount);
-  if (!Number.isFinite(amount) || amount < 1) {
-    alert("Bid must be at least 1.");
-    return;
+document.addEventListener("keydown", (e) => {
+  if (e.key === " ") {
+    e.preventDefault();
+    togglePause();
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    onCorrectNext();
+  } else if (e.key === "Tab") {
+    e.preventDefault();
+    onSwitchTurn();
+  } else if (e.key.toLowerCase() === "s") {
+    e.preventDefault();
+    onSkipPrompt();
+  } else if (e.key.toLowerCase() === "r") {
+    e.preventDefault();
+    resetGame(true);
+  } else if (e.key >= "1" && e.key <= "9") {
+    const idx = parseInt(e.key, 10) - 1;
+    if (idx < state.teams.length) switchToTeam(idx);
   }
-  const current = state.currentBid?.amount ?? 0;
-  if (amount <= current) {
-    alert(`Bid must be greater than ${current}.`);
-    return;
-  }
-  const team = state.teams[state.activeTeamIndex];
-  state.currentBid = { teamId: team.id, amount };
-  saveState();
-  advanceActiveTeam();
-  renderBidding();
-}
+});
 
-function challenge() {
-  if (!state.currentBid) {
-    alert("You need an initial bid before you can challenge.");
-    return;
-  }
-  const challenger = state.teams[state.activeTeamIndex];
-  const listingTeamId = state.currentBid.teamId;
-  state.lastChallengerTeamId = challenger.id;
-  state.listingTeamId = listingTeamId;
-  state.requiredCount = state.currentBid.amount;
-  state.phase = "listing";
-  state.listedItems = [];
-  state.listingUseCounter = false;
-  state.manualCount = 0;
-  saveState();
-  stopTimer();
-  if (state.timerEnabled) startTimer();
-  render();
-}
+async function init() {
+  // Default 2 teams
+  state.teams = [createTeam("Team A", "#60a5fa"), createTeam("Team B", "#22d3ee")];
+  state.activeTeamIdx = 0;
 
-function startTimer() {
-  state.timerTick = state.timerSeconds;
-  renderTimerDisplays();
-  timerInterval = setInterval(() => {
-    state.timerTick -= 1;
-    renderTimerDisplays();
-    if (state.timerTick <= 0) {
-      stopTimer();
-      const count = currentCount();
-      completeRound(count >= state.requiredCount);
-    }
-  }, 1000);
-}
+  await loadManifest();
 
-function stopTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = null;
-  renderTimerDisplays();
-}
-
-function renderTimerDisplays() {
-  const d1 = el("#timer-display");
-  const d2 = el("#timer-live");
-  if (d1) d1.textContent = String(state.timerTick ?? state.timerSeconds);
-  if (d2) {
-    if (state.phase === "listing" && state.timerEnabled) {
-      d2.classList.remove("hidden");
-      d2.textContent = String(state.timerTick ?? state.timerSeconds);
-    } else {
-      d2.classList.add("hidden");
-    }
-  }
-}
-
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
-}
-
-function renderSpotlights() {
-  // Bidding
-  const sbT = el("#spotlight-topic-bidding");
-  const sbQ = el("#spotlight-question-bidding");
-  if (sbT) sbT.textContent = state.topic || "—";
-  if (sbQ) sbQ.textContent = state.question || "—";
-
-  // Listing
-  const slT = el("#spotlight-topic-listing");
-  const slQ = el("#spotlight-question-listing");
-  if (slT) slT.textContent = state.topic || "—";
-  if (slQ) slQ.textContent = state.question || "—";
-
-  // Result
-  const srT = el("#spotlight-topic-result");
-  const srQ = el("#spotlight-question-result");
-  if (srT) srT.textContent = state.topic || "—";
-  if (srQ) srQ.textContent = state.question || "—";
-}
-
-function render() {
-  el("#setup-section").classList.toggle("hidden", state.phase !== "setup");
-  const showGame = state.phase !== "setup";
-  el("#score-section").classList.toggle("hidden", !showGame);
-  el("#round-section").classList.toggle("hidden", state.phase !== "round");
-  el("#bidding-section").classList.toggle("hidden", state.phase !== "bidding");
-  el("#listing-section").classList.toggle("hidden", state.phase !== "listing");
-  el("#result-section").classList.toggle("hidden", state.phase !== "result");
-
-  if (state.phase === "setup") {
-    renderTeamsEditor();
+  // Optionally auto-load first deck from manifest
+  if ((state.manifest.decks || []).length) {
+    await loadDeckById(state.manifest.decks[0].id);
   } else {
-    renderScoreboard();
-    el("#starting-rotation").value = state.startingRotation;
-    el("#timer-enabled").checked = state.timerEnabled;
-    renderTimerDisplays();
-
-    if (state.phase === "round") {
-      el("#topic-input").value = state.topic || "";
-      el("#question-input").value = state.question || "";
-      renderChampionsNomination();
-      renderTopicBank();
-    }
-
-    if (state.phase === "bidding") {
-      el("#bidding-topic").textContent = state.topic || "—";
-      el("#bidding-question").textContent = state.question || "—";
-      const current = state.currentBid;
-      el("#current-bid-amount").textContent = current ? String(current.amount) : "—";
-      el("#current-bid-team").textContent = current ? teamById(current.teamId).name : "—";
-      el("#badge-starting-team").textContent = `Starting: ${state.teams[state.startingTeamIndex].name}`;
-      el("#badge-active-team").textContent = `Turn: ${state.teams[state.activeTeamIndex].name}`;
-      const bidInput = el("#bid-custom");
-      const min = Math.max(1, (state.currentBid?.amount ?? 0) + 1);
-      bidInput.min = String(min);
-      if (Number(bidInput.value) < min) bidInput.value = String(min);
-      renderSpotlights();
-    }
-
-    if (state.phase === "listing") {
-      el("#listing-team").textContent = teamById(state.listingTeamId).name;
-      el("#listing-required").textContent = String(state.requiredCount);
-      el("#listing-topic").textContent = state.topic || "—";
-      renderListedItems();
-      renderListingUI();
-      renderSpotlights();
-    }
-
-    if (state.phase === "result") {
-      renderSpotlights();
-    }
-  }
-}
-
-function teamById(id) {
-  return state.teams.find((t) => t.id === id);
-}
-
-function renderListedItems() {
-  el("#listed-count").textContent = String(currentCount());
-  const ul = el("#listed-items");
-  ul.innerHTML = "";
-  state.listedItems.forEach((it, idx) => {
-    const li = document.createElement("li");
-    li.innerHTML = `${escapeHtml(it)} <span class="x" data-idx="${idx}" title="Remove">✕</span>`;
-    ul.appendChild(li);
-  });
-  els("#listed-items .x").forEach((x) => {
-    x.addEventListener("click", () => {
-      const i = Number(x.dataset.idx);
-      state.listedItems.splice(i, 1);
-      saveState();
-      renderListedItems();
-    });
-  });
-}
-
-function renderListingUI() {
-  // Counter checkbox and panel
-  const chk = el("#counter-enabled");
-  if (chk) chk.checked = !!state.listingUseCounter;
-
-  const panel = el("#counter-panel");
-  if (panel) panel.classList.toggle("hidden", !state.listingUseCounter);
-
-  const typingArea = el("#listing-typing-area");
-  if (typingArea) typingArea.classList.toggle("hidden", !!state.listingUseCounter);
-
-  const disp = el("#counter-display");
-  if (disp) disp.textContent = String(state.manualCount);
-
-  // Always keep main count synced
-  const countEl = el("#listed-count");
-  if (countEl) countEl.textContent = String(currentCount());
-}
-
-function uniqueCount() {
-  const set = new Set(state.listedItems.map((n) => normalizeItem(n)));
-  return set.size;
-}
-function currentCount() {
-  return state.listingUseCounter ? state.manualCount : uniqueCount();
-}
-function normalizeItem(s) {
-  return s.trim().toLowerCase();
-}
-
-function nextRoundSetup() {
-  if (state.startingRotation === "round-robin") {
-    state.startingTeamIndex = (state.startingTeamIndex + 1) % state.teams.length;
-  }
-  state.activeTeamIndex = state.startingTeamIndex;
-  state.roundNumber += 1;
-  state.topic = "";
-  state.question = "";
-  state.currentBid = null;
-  state.requiredCount = 0;
-  state.listedItems = [];
-  state.listingUseCounter = false;
-  state.manualCount = 0;
-  state.lastChallengerTeamId = null;
-  state.listingTeamId = null;
-  state.champions = {};
-  state.phase = "round";
-  saveState();
-  render();
-}
-
-function completeRound(successHit) {
-  stopTimer();
-  const listingTeam = teamById(state.listingTeamId);
-  const challengerTeam = teamById(state.lastChallengerTeamId);
-  let winner, loser, summary;
-  if (successHit) {
-    winner = listingTeam;
-    loser = challengerTeam;
-    summary = `${listingTeam.name}'s Champion hit ${state.requiredCount}. ${listingTeam.name} scores 1 point.`;
-    listingTeam.score += 1;
-  } else {
-    winner = challengerTeam;
-    loser = listingTeam;
-    summary = `${listingTeam.name}'s Champion failed to reach ${state.requiredCount}. ${challengerTeam.name} scores 1 point.`;
-    challengerTeam.score += 1;
-  }
-  state.lastResult = { winnerId: winner.id, loserId: loser.id, summary };
-  state.phase = "result";
-  saveState();
-  render();
-
-  el("#result-summary").textContent = summary;
-}
-
-function exportGame() {
-  const data = deepClone(state);
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `champions_bid_export_round_${state.roundNumber}.json`;
-  a.click();
-}
-
-function importGameFile(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const data = JSON.parse(reader.result);
-      state = data;
-      stopTimer();
-      saveState();
-      render();
-    } catch (e) {
-      alert("Invalid file.");
-    }
-  };
-  reader.readAsText(file);
-}
-
-function resetAll() {
-  if (!confirm("Reset the entire game? This will clear local data.")) return;
-  stopTimer();
-  state = initialState();
-  saveState();
-  render();
-}
-
-/* ---------- Topic Bank UI ---------- */
-
-let bankFilter = { text: "", category: "__all__" };
-
-function renderTopicBank() {
-  const catSel = el("#bank-category-filter");
-  if (catSel && catSel.options.length <= 1) {
-    for (const c of TOPIC_BANK) {
-      const opt = document.createElement("option");
-      opt.value = c.category;
-      opt.textContent = c.category;
-      catSel.appendChild(opt);
-    }
-  }
-  const list = el("#bank-list");
-  if (!list) return;
-  list.innerHTML = "";
-
-  const qText = bankFilter.text.trim().toLowerCase();
-  const cat = bankFilter.category;
-
-  const bank = TOPIC_BANK.map((c) => {
-    let qs = c.questions;
-    if (qText) {
-      qs = qs.filter((q) => q.toLowerCase().includes(qText) || c.category.toLowerCase().includes(qText));
-    }
-    return { category: c.category, questions: qs };
-  }).filter((c) => (cat === "__all__" ? true : c.category === cat));
-
-  bank.forEach((c) => {
-    if (c.questions.length === 0) return;
-    const details = document.createElement("details");
-    details.className = "bank-category";
-    details.open = true;
-    details.innerHTML = `
-      <summary>
-        <span>${escapeHtml(c.category)}</span>
-        <span class="count">${c.questions.length} question${c.questions.length === 1 ? "" : "s"}</span>
-      </summary>
-    `;
-    const ul = document.createElement("ul");
-    c.questions.forEach((q) => {
-      const li = document.createElement("li");
-      const span = document.createElement("span");
-      span.className = "q";
-      span.textContent = q;
-      const btn = document.createElement("button");
-      btn.className = "secondary use-btn";
-      btn.textContent = "Use";
-      btn.addEventListener("click", () => {
-        setTopicAndQuestion(c.category, q);
-      });
-      li.appendChild(span);
-      li.appendChild(btn);
-      ul.appendChild(li);
-    });
-    details.appendChild(ul);
-    list.appendChild(details);
-  });
-}
-
-function setTopicAndQuestion(topic, question) {
-  state.topic = topic;
-  state.question = question;
-  saveState();
-  const t = el("#topic-input");
-  const q = el("#question-input");
-  if (t) t.value = topic;
-  if (q) q.value = question;
-}
-
-function randomFrom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function bankRandomAny() {
-  const qText = bankFilter.text.trim().toLowerCase();
-  const cat = bankFilter.category;
-  const pool = [];
-
-  TOPIC_BANK.forEach((c) => {
-    if (cat !== "__all__" && c.category !== cat) return;
-    c.questions.forEach((q) => {
-      if (!qText || q.toLowerCase().includes(qText) || c.category.toLowerCase().includes(qText)) {
-        pool.push({ category: c.category, question: q });
-      }
-    });
-  });
-
-  if (pool.length === 0) {
-    alert("No questions match your current search/filter.");
-    return;
-  }
-  const pick = randomFrom(pool);
-  setTopicAndQuestion(pick.category, pick.question);
-}
-
-/* ---------- Events ---------- */
-
-function wireGlobalEvents() {
-  // Setup buttons
-  el("#btn-add-team").addEventListener("click", addTeam);
-  el("#btn-start").addEventListener("click", beginGame);
-
-  // Scoreboard controls
-  el("#starting-rotation").addEventListener("change", (e) => {
-    state.startingRotation = e.target.value;
-    saveState();
-  });
-  el("#timer-enabled").addEventListener("change", (e) => {
-    state.timerEnabled = e.target.checked;
-    saveState();
-  });
-
-  el("#btn-edit-teams").addEventListener("click", () => {
-    setPhase("setup");
-  });
-
-  // Round inputs
-  el("#topic-input").addEventListener("input", (e) => {
-    state.topic = e.target.value;
-    saveState();
-  });
-  el("#question-input").addEventListener("input", (e) => {
-    state.question = e.target.value;
-    saveState();
-  });
-  el("#btn-start-bidding").addEventListener("click", startBidding);
-
-  // Topic Bank events
-  const search = el("#bank-search");
-  const catSel = el("#bank-category-filter");
-  const randomAny = el("#btn-bank-random-any");
-  const randomCat = el("#btn-bank-random-cat");
-
-  if (search) {
-    search.addEventListener("input", (e) => {
-      bankFilter.text = e.target.value || "";
-      renderTopicBank();
-    });
-  }
-  if (catSel) {
-    catSel.addEventListener("change", (e) => {
-      bankFilter.category = e.target.value;
-      renderTopicBank();
-    });
-  }
-  if (randomAny) {
-    randomAny.addEventListener("click", () => bankRandomAny());
-  }
-  if (randomCat) {
-    randomCat.addEventListener("click", () => {
-      const prev = bankFilter.category;
-      if (prev === "__all__") {
-        alert("Select a category first to randomize within it.");
-        return;
-      }
-      bankRandomAny();
-    });
+    renderStatus("Add decks to decks/decks.json or click Random Deck after adding.");
   }
 
-  // Bidding controls
-  el("#btn-bid-plus1").addEventListener("click", () => {
-    const next = (state.currentBid?.amount ?? 0) + 1;
-    submitBid(next);
-  });
-  el("#btn-bid-custom").addEventListener("click", () => {
-    const amt = Number(el("#bid-custom").value);
-    submitBid(amt);
-  });
-  el("#btn-challenge").addEventListener("click", challenge);
-
-  // Listing controls (typing)
-  const listingInput = el("#listing-input");
-  listingInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      const val = listingInput.value.trim();
-      if (val) {
-        const norm = normalizeItem(val);
-        const exists = new Set(state.listedItems.map(normalizeItem));
-        if (!exists.has(norm)) {
-          state.listedItems.push(val.trim());
-          saveState();
-          renderListedItems();
-        }
-        listingInput.value = "";
-      }
-    }
-  });
-
-  // Undo/Clear respect counter mode
-  el("#btn-clear-last").addEventListener("click", () => {
-    if (state.listingUseCounter) {
-      state.manualCount = Math.max(0, state.manualCount - 1);
-    } else {
-      state.listedItems.pop();
-    }
-    saveState();
-    renderListedItems();
-    renderListingUI();
-  });
-  el("#btn-clear-all").addEventListener("click", () => {
-    if (confirm("Clear all?")) {
-      if (state.listingUseCounter) {
-        state.manualCount = 0;
-      } else {
-        state.listedItems = [];
-      }
-      saveState();
-      renderListedItems();
-      renderListingUI();
-    }
-  });
-
-  // Counter toggle + buttons
-  el("#counter-enabled").addEventListener("change", (e) => {
-    const enabled = e.target.checked;
-    state.listingUseCounter = enabled;
-    if (enabled) {
-      // Pick up from current unique typed count
-      state.manualCount = Math.max(state.manualCount, uniqueCount());
-    }
-    saveState();
-    renderListingUI();
-  });
-  el("#btn-counter-plus").addEventListener("click", () => {
-    state.manualCount += 1;
-    saveState();
-    renderListingUI();
-  });
-  el("#btn-counter-minus").addEventListener("click", () => {
-    state.manualCount = Math.max(0, state.manualCount - 1);
-    saveState();
-    renderListingUI();
-  });
-  el("#btn-counter-reset").addEventListener("click", () => {
-    state.manualCount = 0;
-    saveState();
-    renderListingUI();
-  });
-
-  el("#btn-complete-success").addEventListener("click", () => completeRound(true));
-  el("#btn-complete-fail").addEventListener("click", () => completeRound(false));
-
-  // Result controls
-  el("#btn-next-round").addEventListener("click", () => {
-    const note = el("#forfeit-input").value.trim();
-    if (state.lastResult?.loserId && note) {
-      state.forfeits.push({ round: state.roundNumber, losingTeamId: state.lastResult.loserId, note });
-    }
-    el("#forfeit-input").value = "";
-    nextRoundSetup();
-  });
-
-  // Header actions
-  el("#btn-export").addEventListener("click", exportGame);
-  el("#btn-import").addEventListener("click", () => el("#import-file").click());
-  el("#import-file").addEventListener("change", (e) => {
-    const file = e.target.files?.[0];
-    if (file) importGameFile(file);
-    e.target.value = "";
-  });
-  el("#btn-reset").addEventListener("click", resetAll);
-
-  // Accessibility: keyboard help
-  window.addEventListener("keydown", (e) => {
-    if (state.phase === "bidding") {
-      if (e.key === "+") {
-        e.preventDefault();
-        const next = (state.currentBid?.amount ?? 0) + 1;
-        submitBid(next);
-      } else if (e.key.toLowerCase() === "c") {
-        e.preventDefault();
-        challenge();
-      }
-    } else if (state.phase === "listing") {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault();
-        const success = currentCount() >= state.requiredCount;
-        completeRound(success);
-      } else if (state.listingUseCounter && e.key === " ") {
-        // Spacebar to increment when counter mode enabled
-        e.preventDefault();
-        state.manualCount += 1;
-        saveState();
-        renderListingUI();
-      }
-    }
-  });
+  renderAll();
+  if (!state.deck.length) renderStatus("Select a deck above or click Random Deck, then press Start Game.");
+  loop();
 }
 
-function renderBidding() {
-  const current = state.currentBid;
-  el("#current-bid-amount").textContent = current ? String(current.amount) : "—";
-  el("#current-bid-team").textContent = current ? teamById(current.teamId).name : "—";
-  el("#badge-active-team").textContent = `Turn: ${state.teams[state.activeTeamIndex].name}`;
-  const bidInput = el("#bid-custom");
-  const min = Math.max(1, (state.currentBid?.amount ?? 0) + 1);
-  bidInput.min = String(min);
-  if (Number(bidInput.value) < min) bidInput.value = String(min);
-  renderSpotlights();
-}
-
-function init() {
-  wireGlobalEvents();
-  render();
-}
 init();
