@@ -18,16 +18,9 @@ const TOPIC_BANK = [
     questions: [
       "How many shoe brands can you name?",
       "How many clothing brands can you list?",
-      "How many luxury fashion houses can you name?",
+      "How many luxury brands can you name?",
       "How many sportswear or athleisure brands can you name?",
-      "How many streetwear brands can you list?",
-      "How many denim/jeans brands can you name?",
       "How many watch brands can you list?",
-      "How many types of hats can you list?",
-      "How many types of jackets or coats can you list?",
-      "How many clothing accessories can you list (belts, scarves, etc.)?",
-      "How many fabric or material types used in clothing can you list?",
-      "How many sneaker models or lines can you name?",
     ],
   },
   {
@@ -38,30 +31,21 @@ const TOPIC_BANK = [
       "How many bands can you list?",
       "How many K-Pop boy or girl groups can you name?",
       "How many musical instruments can you list?",
-      "How many famous pop artists can you list?",
-      "How many hip-hop producers can you name?",
-      "How many EDM subgenres can you list?",
-      "How many classical composers can you name?",
       "How many rock subgenres or movements can you list?",
-      "How many famous music festivals can you name?",
-      "How many Grammy Award categories or notable awards can you list?",
     ],
+  },
+  {
+    category: "Youtube",
+    questions: ["How many Youtubers can you name?", "How many YouTube channels have over 10 million subscribers?"],
   },
   {
     category: "Sports",
     questions: [
-      "How many top-flight soccer/football teams can you name (Premier League, La Liga, etc.)?",
+      "How many soccer teams can you name in the Premier League?",
       "How many sports featured in the Olympics can you list?",
       "How many NBA teams can you name?",
-      "How many FIFA World Cup host countries can you name?",
-      "How many tennis Grand Slam champions can you list?",
-      "How many track and field events can you list?",
       "How many martial arts disciplines can you name?",
       "How many famous athletes can you name?",
-      "How many cricket-playing nations can you name?",
-      "How many Formula 1 constructors or drivers can you list?",
-      "How many positions in common team sports (e.g., soccer, basketball, baseball) can you list?",
-      "How many rugby nations or clubs can you list?",
     ],
   },
   {
@@ -70,14 +54,6 @@ const TOPIC_BANK = [
       "How many serial killers or notable criminals can you list?",
       "How many Presidents, Kings, or Queens can you list (specify country or any)?",
       "How many ancient civilizations can you name?",
-      "How many famous historical leaders can you name?",
-      "How many world-changing inventions (pre-1900) can you list?",
-      "How many explorers or navigators can you name?",
-      "How many revolutions or major uprisings can you list?",
-      "How many World War II battles or operations can you name?",
-      "How many empires from history can you list?",
-      "How many historical treaties can you name?",
-      "How many Nobel Prize laureates (any category) can you name?",
       "How many famous landmarks or monuments can you list?",
     ],
   },
@@ -89,48 +65,15 @@ const TOPIC_BANK = [
       "How many countries in Asia can you name?",
       "How many countries in Europe can you name?",
       "How many U.S. states can you name?",
-      "How many rivers of the world can you list?",
-      "How many mountain ranges can you list?",
-      "How many islands or archipelagos can you name?",
-      "How many deserts can you name?",
-      "How many national parks can you list (specify country)?",
-      "How many cities with populations over 1 million can you name?",
-      "How many UNESCO World Heritage Sites can you name?",
     ],
   },
   {
     category: "Transport",
-    questions: [
-      "How many MRT or LRT lines in Singapore can you list?",
-      "How many vehicle brands can you name?",
-      "How many car models from a specific brand can you name (pick a brand)?",
-      "How many airline carriers can you list?",
-      "How many aircraft manufacturers can you name?",
-      "How many motorcycle brands can you name?",
-      "How many train or subway systems around the world can you list?",
-      "How many shipping or cruise lines can you name?",
-      "How many auto parts or systems can you list (engine, drivetrain, etc.)?",
-      "How many traffic signs or road markings can you list?",
-      "How many public transportation modes can you name?",
-      "How many famous car designers or tuning houses can you name?",
-    ],
+    questions: ["How many MRT or LRT lines in Singapore can you list?", "How many vehicle brands can you name?", "How many airline carriers can you list?", "How many motorcycle brands can you name?"],
   },
   {
     category: "Science",
-    questions: [
-      "How many elements from the periodic table can you list?",
-      "How many human body parts can you list?",
-      "How many human bones can you name?",
-      "How many organs in the human body can you list?",
-      "How many planets and major moons can you name?",
-      "How many SI base units and derived units can you list?",
-      "How many famous scientists can you name?",
-      "How many constellations can you list?",
-      "How many physics phenomena or laws can you name?",
-      "How many programming languages can you list?",
-      "How many branches of biology can you name?",
-      "How many chemical compounds common in daily life can you list?",
-    ],
+    questions: ["How many elements from the periodic table can you list?"],
   },
   {
     category: "Food and Drinks",
@@ -138,14 +81,7 @@ const TOPIC_BANK = [
       "How many alcoholic brands can you name?",
       "How many world cuisines can you list?",
       "How many fruits can you list?",
-      "How many vegetables can you list?",
-      "How many herbs and spices can you name?",
-      "How many types of pasta can you list?",
       "How many types of cheese can you name?",
-      "How many coffee drinks or brewing methods can you list?",
-      "How many tea types or styles can you list?",
-      "How many desserts or pastries can you name?",
-      "How many chocolate brands can you name?",
       "How many fast food chains can you name?",
     ],
   },
@@ -157,13 +93,6 @@ const TOPIC_BANK = [
       "How many makeup products or items can you list?",
       "How many perfume houses or fragrance brands can you name?",
       "How many beauty retailers can you list?",
-      "How many nail polish brands can you name?",
-      "How many K-beauty brands can you name?",
-      "How many makeup brush types can you list?",
-      "How many sunscreen types or filters can you list?",
-      "How many cosmetic ingredients can you name?",
-      "How many haircare brands can you name?",
-      "How many spa or salon treatments can you list?",
     ],
   },
   {
@@ -171,34 +100,12 @@ const TOPIC_BANK = [
     questions: [
       "List out Primary schools, Secondary schools, Universities, or All Schools (specify region).",
       "How many famous universities worldwide can you name?",
-      "How many fields of study or academic disciplines can you list?",
-      "How many academic degrees or qualifications can you list?",
-      "How many student clubs or campus organizations can you name?",
-      "How many standardized tests or exams can you list?",
-      "How many educational theorists or psychologists can you name?",
-      "How many scholarships or fellowships can you list?",
-      "How many classroom subjects can you list?",
-      "How many learning platforms or MOOCs can you name?",
-      "How many notable lecturers or professors can you name?",
-      "How many school supplies can you list?",
+      "How many fields of study / academic disciplines / degree courses can you list?",
     ],
   },
   {
     category: "Movies & TV",
-    questions: [
-      "How many movie genres can you list?",
-      "How many famous directors can you name?",
-      "How many Oscar Best Picture winners can you list?",
-      "How many actors or actresses can you name?",
-      "How many long-running TV series can you list?",
-      "How many animated films or studios can you name?",
-      "How many streaming platforms can you list?",
-      "How many film franchises can you name?",
-      "How many classic films (pre-1980) can you list?",
-      "How many famous screenwriters can you name?",
-      "How many cinematographers can you name?",
-      "How many TV networks or channels can you list?",
-    ],
+    questions: ["How many movie genres can you list?", "How many actors or actresses can you name?"],
   },
 ];
 
@@ -241,9 +148,6 @@ const initialState = () => ({
   listingTeamId: null,
   requiredCount: 0,
   listedItems: [],
-  // New: manual counter
-  listingUseCounter: false,
-  manualCount: 0,
   forfeits: [], // { round, losingTeamId, note }
 });
 
@@ -329,8 +233,6 @@ function beginGame() {
   state.currentBid = null;
   state.requiredCount = 0;
   state.listedItems = [];
-  state.listingUseCounter = false;
-  state.manualCount = 0;
   state.lastChallengerTeamId = null;
   state.listingTeamId = null;
   saveState();
@@ -506,8 +408,6 @@ function startBidding() {
   state.activeTeamIndex = state.startingTeamIndex;
   state.listedItems = [];
   state.requiredCount = 0;
-  state.listingUseCounter = false;
-  state.manualCount = 0;
   state.lastChallengerTeamId = null;
   state.listingTeamId = null;
   saveState();
@@ -548,8 +448,6 @@ function challenge() {
   state.requiredCount = state.currentBid.amount;
   state.phase = "listing";
   state.listedItems = [];
-  state.listingUseCounter = false;
-  state.manualCount = 0;
   saveState();
   stopTimer();
   if (state.timerEnabled) startTimer();
@@ -564,8 +462,12 @@ function startTimer() {
     renderTimerDisplays();
     if (state.timerTick <= 0) {
       stopTimer();
-      const count = currentCount();
-      completeRound(count >= state.requiredCount);
+      const count = uniqueCount();
+      if (count >= state.requiredCount) {
+        completeRound(true);
+      } else {
+        completeRound(false);
+      }
     }
   }, 1000);
 }
@@ -594,26 +496,6 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 }
 
-function renderSpotlights() {
-  // Bidding
-  const sbT = el("#spotlight-topic-bidding");
-  const sbQ = el("#spotlight-question-bidding");
-  if (sbT) sbT.textContent = state.topic || "—";
-  if (sbQ) sbQ.textContent = state.question || "—";
-
-  // Listing
-  const slT = el("#spotlight-topic-listing");
-  const slQ = el("#spotlight-question-listing");
-  if (slT) slT.textContent = state.topic || "—";
-  if (slQ) slQ.textContent = state.question || "—";
-
-  // Result
-  const srT = el("#spotlight-topic-result");
-  const srQ = el("#spotlight-question-result");
-  if (srT) srT.textContent = state.topic || "—";
-  if (srQ) srQ.textContent = state.question || "—";
-}
-
 function render() {
   el("#setup-section").classList.toggle("hidden", state.phase !== "setup");
   const showGame = state.phase !== "setup";
@@ -635,7 +517,7 @@ function render() {
       el("#topic-input").value = state.topic || "";
       el("#question-input").value = state.question || "";
       renderChampionsNomination();
-      renderTopicBank();
+      renderTopicBank(); // new
     }
 
     if (state.phase === "bidding") {
@@ -650,7 +532,6 @@ function render() {
       const min = Math.max(1, (state.currentBid?.amount ?? 0) + 1);
       bidInput.min = String(min);
       if (Number(bidInput.value) < min) bidInput.value = String(min);
-      renderSpotlights();
     }
 
     if (state.phase === "listing") {
@@ -658,12 +539,6 @@ function render() {
       el("#listing-required").textContent = String(state.requiredCount);
       el("#listing-topic").textContent = state.topic || "—";
       renderListedItems();
-      renderListingUI();
-      renderSpotlights();
-    }
-
-    if (state.phase === "result") {
-      renderSpotlights();
     }
   }
 }
@@ -673,7 +548,7 @@ function teamById(id) {
 }
 
 function renderListedItems() {
-  el("#listed-count").textContent = String(currentCount());
+  el("#listed-count").textContent = String(uniqueCount());
   const ul = el("#listed-items");
   ul.innerHTML = "";
   state.listedItems.forEach((it, idx) => {
@@ -691,32 +566,11 @@ function renderListedItems() {
   });
 }
 
-function renderListingUI() {
-  // Counter checkbox and panel
-  const chk = el("#counter-enabled");
-  if (chk) chk.checked = !!state.listingUseCounter;
-
-  const panel = el("#counter-panel");
-  if (panel) panel.classList.toggle("hidden", !state.listingUseCounter);
-
-  const typingArea = el("#listing-typing-area");
-  if (typingArea) typingArea.classList.toggle("hidden", !!state.listingUseCounter);
-
-  const disp = el("#counter-display");
-  if (disp) disp.textContent = String(state.manualCount);
-
-  // Always keep main count synced
-  const countEl = el("#listed-count");
-  if (countEl) countEl.textContent = String(currentCount());
-}
-
 function uniqueCount() {
   const set = new Set(state.listedItems.map((n) => normalizeItem(n)));
   return set.size;
 }
-function currentCount() {
-  return state.listingUseCounter ? state.manualCount : uniqueCount();
-}
+
 function normalizeItem(s) {
   return s.trim().toLowerCase();
 }
@@ -732,8 +586,6 @@ function nextRoundSetup() {
   state.currentBid = null;
   state.requiredCount = 0;
   state.listedItems = [];
-  state.listingUseCounter = false;
-  state.manualCount = 0;
   state.lastChallengerTeamId = null;
   state.listingTeamId = null;
   state.champions = {};
@@ -804,6 +656,7 @@ function resetAll() {
 let bankFilter = { text: "", category: "__all__" };
 
 function renderTopicBank() {
+  // Fill categories in filter dropdown once per render
   const catSel = el("#bank-category-filter");
   if (catSel && catSel.options.length <= 1) {
     for (const c of TOPIC_BANK) {
@@ -814,7 +667,6 @@ function renderTopicBank() {
     }
   }
   const list = el("#bank-list");
-  if (!list) return;
   list.innerHTML = "";
 
   const qText = bankFilter.text.trim().toLowerCase();
@@ -828,7 +680,7 @@ function renderTopicBank() {
     return { category: c.category, questions: qs };
   }).filter((c) => (cat === "__all__" ? true : c.category === cat));
 
-  bank.forEach((c) => {
+  bank.forEach((c, catIndex) => {
     if (c.questions.length === 0) return;
     const details = document.createElement("details");
     details.className = "bank-category";
@@ -840,7 +692,7 @@ function renderTopicBank() {
       </summary>
     `;
     const ul = document.createElement("ul");
-    c.questions.forEach((q) => {
+    c.questions.forEach((q, qIndex) => {
       const li = document.createElement("li");
       const span = document.createElement("span");
       span.className = "q";
@@ -864,6 +716,7 @@ function setTopicAndQuestion(topic, question) {
   state.topic = topic;
   state.question = question;
   saveState();
+  // reflect in inputs immediately
   const t = el("#topic-input");
   const q = el("#question-input");
   if (t) t.value = topic;
@@ -875,6 +728,7 @@ function randomFrom(arr) {
 }
 
 function bankRandomAny() {
+  // Apply current filters
   const qText = bankFilter.text.trim().toLowerCase();
   const cat = bankFilter.category;
   const pool = [];
@@ -951,6 +805,7 @@ function wireGlobalEvents() {
   }
   if (randomCat) {
     randomCat.addEventListener("click", () => {
+      // Force random only within the selected category
       const prev = bankFilter.category;
       if (prev === "__all__") {
         alert("Select a category first to randomize within it.");
@@ -971,7 +826,7 @@ function wireGlobalEvents() {
   });
   el("#btn-challenge").addEventListener("click", challenge);
 
-  // Listing controls (typing)
+  // Listing controls
   const listingInput = el("#listing-input");
   listingInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
@@ -988,58 +843,18 @@ function wireGlobalEvents() {
       }
     }
   });
-
-  // Undo/Clear respect counter mode
   el("#btn-clear-last").addEventListener("click", () => {
-    if (state.listingUseCounter) {
-      state.manualCount = Math.max(0, state.manualCount - 1);
-    } else {
-      state.listedItems.pop();
-    }
+    state.listedItems.pop();
     saveState();
     renderListedItems();
-    renderListingUI();
   });
   el("#btn-clear-all").addEventListener("click", () => {
-    if (confirm("Clear all?")) {
-      if (state.listingUseCounter) {
-        state.manualCount = 0;
-      } else {
-        state.listedItems = [];
-      }
+    if (confirm("Clear all listed items?")) {
+      state.listedItems = [];
       saveState();
       renderListedItems();
-      renderListingUI();
     }
   });
-
-  // Counter toggle + buttons
-  el("#counter-enabled").addEventListener("change", (e) => {
-    const enabled = e.target.checked;
-    state.listingUseCounter = enabled;
-    if (enabled) {
-      // Pick up from current unique typed count
-      state.manualCount = Math.max(state.manualCount, uniqueCount());
-    }
-    saveState();
-    renderListingUI();
-  });
-  el("#btn-counter-plus").addEventListener("click", () => {
-    state.manualCount += 1;
-    saveState();
-    renderListingUI();
-  });
-  el("#btn-counter-minus").addEventListener("click", () => {
-    state.manualCount = Math.max(0, state.manualCount - 1);
-    saveState();
-    renderListingUI();
-  });
-  el("#btn-counter-reset").addEventListener("click", () => {
-    state.manualCount = 0;
-    saveState();
-    renderListingUI();
-  });
-
   el("#btn-complete-success").addEventListener("click", () => completeRound(true));
   el("#btn-complete-fail").addEventListener("click", () => completeRound(false));
 
@@ -1077,14 +892,8 @@ function wireGlobalEvents() {
     } else if (state.phase === "listing") {
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
-        const success = currentCount() >= state.requiredCount;
+        const success = uniqueCount() >= state.requiredCount;
         completeRound(success);
-      } else if (state.listingUseCounter && e.key === " ") {
-        // Spacebar to increment when counter mode enabled
-        e.preventDefault();
-        state.manualCount += 1;
-        saveState();
-        renderListingUI();
       }
     }
   });
@@ -1099,7 +908,6 @@ function renderBidding() {
   const min = Math.max(1, (state.currentBid?.amount ?? 0) + 1);
   bidInput.min = String(min);
   if (Number(bidInput.value) < min) bidInput.value = String(min);
-  renderSpotlights();
 }
 
 function init() {

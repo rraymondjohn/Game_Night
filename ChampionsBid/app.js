@@ -18,16 +18,9 @@ const TOPIC_BANK = [
     questions: [
       "How many shoe brands can you name?",
       "How many clothing brands can you list?",
-      "How many luxury fashion houses can you name?",
+      "How many luxury brands can you name?",
       "How many sportswear or athleisure brands can you name?",
-      "How many streetwear brands can you list?",
-      "How many denim/jeans brands can you name?",
       "How many watch brands can you list?",
-      "How many types of hats can you list?",
-      "How many types of jackets or coats can you list?",
-      "How many clothing accessories can you list (belts, scarves, etc.)?",
-      "How many fabric or material types used in clothing can you list?",
-      "How many sneaker models or lines can you name?",
     ],
   },
   {
@@ -38,30 +31,21 @@ const TOPIC_BANK = [
       "How many bands can you list?",
       "How many K-Pop boy or girl groups can you name?",
       "How many musical instruments can you list?",
-      "How many famous pop artists can you list?",
-      "How many hip-hop producers can you name?",
-      "How many EDM subgenres can you list?",
-      "How many classical composers can you name?",
       "How many rock subgenres or movements can you list?",
-      "How many famous music festivals can you name?",
-      "How many Grammy Award categories or notable awards can you list?",
     ],
+  },
+  {
+    category: "Youtube",
+    questions: ["How many Youtubers can you name?", "How many YouTube channels have over 10 million subscribers?"],
   },
   {
     category: "Sports",
     questions: [
-      "How many top-flight soccer/football teams can you name (Premier League, La Liga, etc.)?",
+      "How many soccer teams can you name in the Premier League?",
       "How many sports featured in the Olympics can you list?",
       "How many NBA teams can you name?",
-      "How many FIFA World Cup host countries can you name?",
-      "How many tennis Grand Slam champions can you list?",
-      "How many track and field events can you list?",
       "How many martial arts disciplines can you name?",
       "How many famous athletes can you name?",
-      "How many cricket-playing nations can you name?",
-      "How many Formula 1 constructors or drivers can you list?",
-      "How many positions in common team sports (e.g., soccer, basketball, baseball) can you list?",
-      "How many rugby nations or clubs can you list?",
     ],
   },
   {
@@ -70,14 +54,6 @@ const TOPIC_BANK = [
       "How many serial killers or notable criminals can you list?",
       "How many Presidents, Kings, or Queens can you list (specify country or any)?",
       "How many ancient civilizations can you name?",
-      "How many famous historical leaders can you name?",
-      "How many world-changing inventions (pre-1900) can you list?",
-      "How many explorers or navigators can you name?",
-      "How many revolutions or major uprisings can you list?",
-      "How many World War II battles or operations can you name?",
-      "How many empires from history can you list?",
-      "How many historical treaties can you name?",
-      "How many Nobel Prize laureates (any category) can you name?",
       "How many famous landmarks or monuments can you list?",
     ],
   },
@@ -89,48 +65,15 @@ const TOPIC_BANK = [
       "How many countries in Asia can you name?",
       "How many countries in Europe can you name?",
       "How many U.S. states can you name?",
-      "How many rivers of the world can you list?",
-      "How many mountain ranges can you list?",
-      "How many islands or archipelagos can you name?",
-      "How many deserts can you name?",
-      "How many national parks can you list (specify country)?",
-      "How many cities with populations over 1 million can you name?",
-      "How many UNESCO World Heritage Sites can you name?",
     ],
   },
   {
     category: "Transport",
-    questions: [
-      "How many MRT or LRT lines in Singapore can you list?",
-      "How many vehicle brands can you name?",
-      "How many car models from a specific brand can you name (pick a brand)?",
-      "How many airline carriers can you list?",
-      "How many aircraft manufacturers can you name?",
-      "How many motorcycle brands can you name?",
-      "How many train or subway systems around the world can you list?",
-      "How many shipping or cruise lines can you name?",
-      "How many auto parts or systems can you list (engine, drivetrain, etc.)?",
-      "How many traffic signs or road markings can you list?",
-      "How many public transportation modes can you name?",
-      "How many famous car designers or tuning houses can you name?",
-    ],
+    questions: ["How many MRT or LRT lines in Singapore can you list?", "How many vehicle brands can you name?", "How many airline carriers can you list?", "How many motorcycle brands can you name?"],
   },
   {
     category: "Science",
-    questions: [
-      "How many elements from the periodic table can you list?",
-      "How many human body parts can you list?",
-      "How many human bones can you name?",
-      "How many organs in the human body can you list?",
-      "How many planets and major moons can you name?",
-      "How many SI base units and derived units can you list?",
-      "How many famous scientists can you name?",
-      "How many constellations can you list?",
-      "How many physics phenomena or laws can you name?",
-      "How many programming languages can you list?",
-      "How many branches of biology can you name?",
-      "How many chemical compounds common in daily life can you list?",
-    ],
+    questions: ["How many elements from the periodic table can you list?"],
   },
   {
     category: "Food and Drinks",
@@ -138,14 +81,7 @@ const TOPIC_BANK = [
       "How many alcoholic brands can you name?",
       "How many world cuisines can you list?",
       "How many fruits can you list?",
-      "How many vegetables can you list?",
-      "How many herbs and spices can you name?",
-      "How many types of pasta can you list?",
       "How many types of cheese can you name?",
-      "How many coffee drinks or brewing methods can you list?",
-      "How many tea types or styles can you list?",
-      "How many desserts or pastries can you name?",
-      "How many chocolate brands can you name?",
       "How many fast food chains can you name?",
     ],
   },
@@ -157,13 +93,6 @@ const TOPIC_BANK = [
       "How many makeup products or items can you list?",
       "How many perfume houses or fragrance brands can you name?",
       "How many beauty retailers can you list?",
-      "How many nail polish brands can you name?",
-      "How many K-beauty brands can you name?",
-      "How many makeup brush types can you list?",
-      "How many sunscreen types or filters can you list?",
-      "How many cosmetic ingredients can you name?",
-      "How many haircare brands can you name?",
-      "How many spa or salon treatments can you list?",
     ],
   },
   {
@@ -171,34 +100,12 @@ const TOPIC_BANK = [
     questions: [
       "List out Primary schools, Secondary schools, Universities, or All Schools (specify region).",
       "How many famous universities worldwide can you name?",
-      "How many fields of study or academic disciplines can you list?",
-      "How many academic degrees or qualifications can you list?",
-      "How many student clubs or campus organizations can you name?",
-      "How many standardized tests or exams can you list?",
-      "How many educational theorists or psychologists can you name?",
-      "How many scholarships or fellowships can you list?",
-      "How many classroom subjects can you list?",
-      "How many learning platforms or MOOCs can you name?",
-      "How many notable lecturers or professors can you name?",
-      "How many school supplies can you list?",
+      "How many fields of study / academic disciplines / degree courses can you list?",
     ],
   },
   {
     category: "Movies & TV",
-    questions: [
-      "How many movie genres can you list?",
-      "How many famous directors can you name?",
-      "How many Oscar Best Picture winners can you list?",
-      "How many actors or actresses can you name?",
-      "How many long-running TV series can you list?",
-      "How many animated films or studios can you name?",
-      "How many streaming platforms can you list?",
-      "How many film franchises can you name?",
-      "How many classic films (pre-1980) can you list?",
-      "How many famous screenwriters can you name?",
-      "How many cinematographers can you name?",
-      "How many TV networks or channels can you list?",
-    ],
+    questions: ["How many movie genres can you list?", "How many actors or actresses can you name?"],
   },
 ];
 
@@ -241,7 +148,6 @@ const initialState = () => ({
   listingTeamId: null,
   requiredCount: 0,
   listedItems: [],
-  // New: manual counter
   listingUseCounter: false,
   manualCount: 0,
   forfeits: [], // { round, losingTeamId, note }
@@ -249,6 +155,7 @@ const initialState = () => ({
 
 let state = loadState() || initialState();
 let timerInterval = null;
+let audioCtx = null;
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -333,6 +240,8 @@ function beginGame() {
   state.manualCount = 0;
   state.lastChallengerTeamId = null;
   state.listingTeamId = null;
+  stopTimer();
+  state.timerTick = state.timerSeconds;
   saveState();
   render();
 }
@@ -510,6 +419,8 @@ function startBidding() {
   state.manualCount = 0;
   state.lastChallengerTeamId = null;
   state.listingTeamId = null;
+  stopTimer();
+  state.timerTick = state.timerSeconds; // prepare default
   saveState();
   render();
 }
@@ -550,17 +461,34 @@ function challenge() {
   state.listedItems = [];
   state.listingUseCounter = false;
   state.manualCount = 0;
-  saveState();
+  // Manual timer: do not auto-start
   stopTimer();
-  if (state.timerEnabled) startTimer();
+  state.timerTick = state.timerSeconds;
+  saveState();
   render();
 }
 
 function startTimer() {
-  state.timerTick = state.timerSeconds;
+  // Create audio context on user interaction if needed
+  if (!audioCtx) {
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch {}
+  }
+  // Ensure not already running
+  if (timerInterval) return;
+
+  // If timerTick out of sync, clamp
+  if (!Number.isFinite(state.timerTick) || state.timerTick < 0) {
+    state.timerTick = state.timerSeconds;
+  }
   renderTimerDisplays();
+
   timerInterval = setInterval(() => {
     state.timerTick -= 1;
+    if (state.timerTick <= 10) {
+      beepSquare();
+    }
     renderTimerDisplays();
     if (state.timerTick <= 0) {
       stopTimer();
@@ -570,23 +498,74 @@ function startTimer() {
   }, 1000);
 }
 
+function pauseTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    renderTimerDisplays();
+  }
+}
+
 function stopTimer() {
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = null;
   renderTimerDisplays();
 }
 
+function fmtTime(totalSeconds) {
+  const s = Math.max(0, Math.floor(totalSeconds || 0));
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
 function renderTimerDisplays() {
+  // Scoreboard small display (default/current)
   const d1 = el("#timer-display");
+  if (d1) d1.textContent = fmtTime(state.timerTick ?? state.timerSeconds);
+
+  // Listing small badge
   const d2 = el("#timer-live");
-  if (d1) d1.textContent = String(state.timerTick ?? state.timerSeconds);
   if (d2) {
-    if (state.phase === "listing" && state.timerEnabled) {
+    if (state.phase === "listing") {
       d2.classList.remove("hidden");
-      d2.textContent = String(state.timerTick ?? state.timerSeconds);
+      d2.textContent = fmtTime(state.timerTick ?? state.timerSeconds);
     } else {
       d2.classList.add("hidden");
     }
+  }
+
+  // Listing large display
+  const big = el("#timer-display-large");
+  if (big) big.textContent = fmtTime(state.timerTick ?? state.timerSeconds);
+
+  // Update Pause button label
+  const pauseBtn = el("#btn-timer-pause");
+  if (pauseBtn) pauseBtn.textContent = timerInterval ? "Pause" : "Resume";
+}
+
+function beepSquare() {
+  if (!audioCtx) return; // Will be created on first Start click
+  try {
+    const duration = 0.12; // seconds
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = "square";
+    // Subtle pitch ramp towards the end (optional)
+    const freq = 880; // Hz
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+    // Envelope to avoid clicks
+    const now = audioCtx.currentTime;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.2, now + 0.01);
+    gain.gain.linearRampToValueAtTime(0.0, now + duration);
+
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + duration);
+  } catch {
+    // ignore audio errors (e.g., autoplay restrictions)
   }
 }
 
@@ -657,9 +636,15 @@ function render() {
       el("#listing-team").textContent = teamById(state.listingTeamId).name;
       el("#listing-required").textContent = String(state.requiredCount);
       el("#listing-topic").textContent = state.topic || "—";
+      // Timer controls input + displays
+      const secInput = el("#timer-seconds-input");
+      if (secInput) {
+        secInput.value = String(state.timerSeconds);
+      }
       renderListedItems();
       renderListingUI();
       renderSpotlights();
+      renderTimerDisplays();
     }
 
     if (state.phase === "result") {
@@ -692,7 +677,6 @@ function renderListedItems() {
 }
 
 function renderListingUI() {
-  // Counter checkbox and panel
   const chk = el("#counter-enabled");
   if (chk) chk.checked = !!state.listingUseCounter;
 
@@ -705,7 +689,6 @@ function renderListingUI() {
   const disp = el("#counter-display");
   if (disp) disp.textContent = String(state.manualCount);
 
-  // Always keep main count synced
   const countEl = el("#listed-count");
   if (countEl) countEl.textContent = String(currentCount());
 }
@@ -737,6 +720,8 @@ function nextRoundSetup() {
   state.lastChallengerTeamId = null;
   state.listingTeamId = null;
   state.champions = {};
+  stopTimer();
+  state.timerTick = state.timerSeconds;
   state.phase = "round";
   saveState();
   render();
@@ -1018,7 +1003,6 @@ function wireGlobalEvents() {
     const enabled = e.target.checked;
     state.listingUseCounter = enabled;
     if (enabled) {
-      // Pick up from current unique typed count
       state.manualCount = Math.max(state.manualCount, uniqueCount());
     }
     saveState();
@@ -1038,6 +1022,34 @@ function wireGlobalEvents() {
     state.manualCount = 0;
     saveState();
     renderListingUI();
+  });
+
+  // Timer controls
+  el("#timer-seconds-input").addEventListener("change", (e) => {
+    const val = Math.max(5, Math.min(3600, Number(e.target.value) || 60));
+    state.timerSeconds = val;
+    // Only update tick if not running (avoid jump while counting)
+    if (!timerInterval) {
+      state.timerTick = state.timerSeconds;
+    }
+    saveState();
+    renderTimerDisplays();
+  });
+  el("#btn-timer-start").addEventListener("click", () => {
+    // Sync tick to current seconds if not started yet
+    if (!timerInterval && (state.timerTick == null || state.timerTick <= 0)) {
+      state.timerTick = state.timerSeconds;
+    }
+    startTimer();
+  });
+  el("#btn-timer-pause").addEventListener("click", () => {
+    if (timerInterval) pauseTimer();
+    else startTimer();
+  });
+  el("#btn-timer-reset").addEventListener("click", () => {
+    stopTimer();
+    state.timerTick = state.timerSeconds;
+    renderTimerDisplays();
   });
 
   el("#btn-complete-success").addEventListener("click", () => completeRound(true));
@@ -1080,11 +1092,21 @@ function wireGlobalEvents() {
         const success = currentCount() >= state.requiredCount;
         completeRound(success);
       } else if (state.listingUseCounter && e.key === " ") {
-        // Spacebar to increment when counter mode enabled
         e.preventDefault();
         state.manualCount += 1;
         saveState();
         renderListingUI();
+      } else if (e.key.toLowerCase() === "s") {
+        // S to start/pause timer
+        e.preventDefault();
+        if (timerInterval) pauseTimer();
+        else startTimer();
+      } else if (e.key.toLowerCase() === "r") {
+        // R to reset timer
+        e.preventDefault();
+        stopTimer();
+        state.timerTick = state.timerSeconds;
+        renderTimerDisplays();
       }
     }
   });

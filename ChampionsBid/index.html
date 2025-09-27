@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Game Night: Champions Bid</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Champions Bid</h1>
+      <div class="header-actions">
+        <button id="btn-export" class="secondary">Export Game</button>
+        <button id="btn-import" class="secondary">Import Game</button>
+        <input id="import-file" type="file" accept="application/json" hidden />
+        <button id="btn-reset" class="danger">Reset</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- Setup -->
+      <section id="setup-section" class="card">
+        <h2>Setup</h2>
+        <p>Create at least two teams with three or more players each.</p>
+        <div id="teams-editor" class="teams-editor"></div>
+        <div class="setup-actions">
+          <button id="btn-add-team">Add Team</button>
+          <button id="btn-start" class="primary">Start Game</button>
+        </div>
+      </section>
+
+      <!-- Scoreboard -->
+      <section id="score-section" class="card hidden">
+        <div class="scoreboard-header">
+          <h2>Scoreboard</h2>
+          <div class="score-controls">
+            <label>
+              Starting team rotation:
+              <select id="starting-rotation">
+                <option value="round-robin">Round Robin</option>
+                <option value="fixed">Fixed (Team 1)</option>
+              </select>
+            </label>
+            <label title="Shows default start value; actual control is on the Listing screen">
+              Timer:
+              <input id="timer-enabled" type="checkbox" />
+              <span id="timer-display" class="timer">01:00</span>
+            </label>
+            <button id="btn-edit-teams" class="secondary">Edit Teams</button>
+          </div>
+        </div>
+        <div id="scoreboard" class="scoreboard"></div>
+      </section>
+
+      <!-- Round controls -->
+      <section id="round-section" class="card hidden">
+        <h2>Round</h2>
+        <div class="round-form">
+          <label class="stack">
+            Topic/Category
+            <input id="topic-input" type="text" placeholder="e.g., Clothing Brands" />
+          </label>
+          <label class="stack">
+            Question (optional)
+            <input id="question-input" type="text" placeholder="e.g., Name clothing brands" />
+          </label>
+        </div>
+
+        <div id="champions-nomination" class="champions"></div>
+
+        <div class="round-actions">
+          <button id="btn-start-bidding" class="primary">Start Bidding</button>
+        </div>
+
+        <!-- Topic Bank -->
+        <section id="topic-bank" class="topic-bank card subtle">
+          <div class="topic-bank-header">
+            <h3>Topic Bank</h3>
+            <div class="bank-controls">
+              <input id="bank-search" type="text" placeholder="Search topic/questions..." />
+              <select id="bank-category-filter">
+                <option value="__all__">All Categories</option>
+              </select>
+              <button id="btn-bank-random-any" class="secondary">Random Topic + Question</button>
+              <button id="btn-bank-random-cat" class="secondary">Random in Category</button>
+            </div>
+          </div>
+          <div id="bank-list" class="bank-list"></div>
+        </section>
+      </section>
+
+      <!-- Bidding -->
+      <section id="bidding-section" class="card hidden">
+        <!-- Spotlight -->
+        <div class="topic-spotlight">
+          <div class="topic-title" id="spotlight-topic-bidding">—</div>
+          <div class="topic-question" id="spotlight-question-bidding">—</div>
+        </div>
+
+        <div class="bidding-header">
+          <h2>Bidding</h2>
+          <div>
+            <span class="badge" id="badge-starting-team">Starting Team</span>
+            <span class="badge" id="badge-active-team">Active Team</span>
+          </div>
+        </div>
+
+        <div class="bidding-info">
+          <div>
+            <strong>Topic:</strong> <span id="bidding-topic">—</span><br />
+            <strong>Question:</strong> <span id="bidding-question">—</span>
+          </div>
+          <div class="current-bid">
+            <strong>Current Bid:</strong>
+            <span id="current-bid-amount">—</span>
+            <span id="current-bid-team" class="pill">—</span>
+          </div>
+        </div>
+
+        <div id="bidding-turn" class="bidding-turn">
+          <div class="bidding-controls">
+            <button id="btn-bid-plus1">Bid +1</button>
+            <div class="inline">
+              <label for="bid-custom">Bid custom</label>
+              <input id="bid-custom" type="number" min="1" value="1" />
+              <button id="btn-bid-custom">Bid</button>
+            </div>
+            <button id="btn-challenge" class="danger">Challenge</button>
+          </div>
+          <p class="hint">Initial minimum bid is 1. You may raise by 1 or more. Challenge when you believe the other team cannot reach their bid.</p>
+        </div>
+      </section>
+
+      <!-- Listing -->
+      <section id="listing-section" class="card hidden">
+        <!-- Spotlight -->
+        <div class="topic-spotlight">
+          <div class="topic-title" id="spotlight-topic-listing">—</div>
+          <div class="topic-question" id="spotlight-question-listing">—</div>
+        </div>
+
+        <div class="listing-header">
+          <h2>Listing</h2>
+          <div class="listing-meta">
+            <div><strong>Challenged Team:</strong> <span id="listing-team" class="pill">—</span></div>
+            <div><strong>Must list at least:</strong> <span id="listing-required">—</span></div>
+            <div><strong>Topic:</strong> <span id="listing-topic">—</span></div>
+          </div>
+        </div>
+
+        <!-- Timer controls (manual start + adjustable) -->
+        <div class="timer-controls">
+          <div class="timer-display-large" id="timer-display-large">01:00</div>
+          <div class="timer-controls-row">
+            <label class="inline">
+              Seconds:
+              <input id="timer-seconds-input" type="number" min="5" max="3600" step="5" value="60" />
+            </label>
+            <button id="btn-timer-start" class="primary">Start Timer</button>
+            <button id="btn-timer-pause" class="secondary">Pause</button>
+            <button id="btn-timer-reset" class="secondary">Reset</button>
+          </div>
+          <small class="muted">Beep sounds every second from 10s to 0.</small>
+        </div>
+
+        <!-- Counter controls -->
+        <div class="counter-controls">
+          <label class="inline">
+            <input id="counter-enabled" type="checkbox" />
+            Use manual counter instead of typing items
+          </label>
+          <div id="counter-panel" class="counter-panel hidden">
+            <div class="counter-display" id="counter-display">0</div>
+            <div class="counter-buttons">
+              <button id="btn-counter-minus" class="secondary">-1</button>
+              <button id="btn-counter-plus" class="primary">+1</button>
+              <button id="btn-counter-reset" class="secondary">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="listing-input" id="listing-typing-area">
+          <label class="stack">
+            Add item
+            <input id="listing-input" type="text" placeholder="Type an item and press Enter" />
+          </label>
+          <div class="listing-actions">
+            <button id="btn-clear-last" class="secondary">Undo Last</button>
+            <button id="btn-clear-all" class="secondary">Clear All</button>
+          </div>
+        </div>
+
+        <div class="listing-body">
+          <div class="listing-count">
+            <strong>Unique items listed / Count:</strong> <span id="listed-count">0</span>
+            <span id="timer-live" class="timer hidden">01:00</span>
+          </div>
+          <ul id="listed-items" class="chips"></ul>
+        </div>
+
+        <div class="listing-footer">
+          <button id="btn-complete-success" class="primary">Champion Hit the Number</button>
+          <button id="btn-complete-fail" class="danger">Champion Failed</button>
+        </div>
+      </section>
+
+      <!-- Result -->
+      <section id="result-section" class="card hidden">
+        <!-- Spotlight -->
+        <div class="topic-spotlight">
+          <div class="topic-title" id="spotlight-topic-result">—</div>
+          <div class="topic-question" id="spotlight-question-result">—</div>
+        </div>
+
+        <h2>Round Result</h2>
+        <p id="result-summary"></p>
+
+        <div class="forfeit">
+          <label class="stack">
+            Forfeit for losing team (optional note)
+            <input id="forfeit-input" type="text" placeholder="e.g., Sing a song" />
+          </label>
+        </div>
+
+        <div class="result-actions">
+          <button id="btn-next-round" class="primary">Next Round</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <small>Made for Game Night • Your data is stored locally in your browser.</small>
+    </footer>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
