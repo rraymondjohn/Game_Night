@@ -491,7 +491,7 @@ function tickOnce() {
     beep(880, 160, "square");
   }
   const secsLeft = Math.ceil(t.timeMs / 1000);
-  [3, 2, 1].forEach((s) => {
+  [10, 9, 8, 7, 6, 5, 4, 3, 2, 1].forEach((s) => {
     const key = `${state.activeTeamIdx}:${s}`;
     if (secsLeft === s && !state.pingedSeconds.has(key) && !state.gameOver) {
       state.pingedSeconds.add(key);

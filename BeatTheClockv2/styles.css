@@ -306,3 +306,53 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+/* === Add to the end of styles.css === */
+
+/* Desktop/layout: put sidebar left of stage, make it taller and scrollable */
+@media (min-width: 980px) {
+  .layout {
+    grid-template-areas: "sidebar stage";
+    grid-template-columns: 420px 1fr; /* wider sidebar */
+    align-items: start;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 72px; /* approximate header height; adjust if needed */
+    height: calc(100vh - 72px - 24px);
+    overflow: auto;
+  }
+
+  /* In a narrow sidebar, keep teams in a single column for readability */
+  .sidebar #teams {
+    grid-template-columns: 1fr !important;
+  }
+
+  .stage {
+    min-height: calc(100vh - 72px - 24px);
+  }
+}
+
+/* Enlarge team cards slightly */
+.team-card {
+  padding: 14px;
+  gap: 10px;
+}
+
+/* Enlarge timer prominently */
+.timer {
+  font-size: clamp(36px, 5.2vw, 96px); /* was clamp(24px, 3.2vw, 60px) */
+  letter-spacing: 0.8px;
+  text-shadow: 0 0 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Make warn/danger stand out a bit more */
+.timer.warn {
+  color: var(--warn);
+  text-shadow: 0 0 14px rgba(245, 158, 11, 0.25);
+}
+.timer.danger {
+  color: var(--bad);
+  text-shadow: 0 0 14px rgba(239, 68, 68, 0.25);
+}
