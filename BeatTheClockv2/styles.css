@@ -356,3 +356,47 @@ select {
   color: var(--bad);
   text-shadow: 0 0 14px rgba(239, 68, 68, 0.25);
 }
+
+/* === Prompt content sizing (moderate, big-screen friendly) === */
+
+/* Widen the inner container so large text wraps less aggressively, but not too wide */
+.prompt-inner {
+  width: min(1100px, 96%);
+}
+
+@media (min-width: 1280px) {
+  .prompt-inner {
+    width: min(1300px, 94%);
+  }
+}
+@media (min-width: 1600px) {
+  .prompt-inner {
+    width: min(1400px, 92%);
+  }
+}
+
+/* Make text prompts larger, but capped to avoid being too big */
+.prompt-content {
+  padding: 14px; /* more breathing room for big text */
+}
+.prompt-content .text {
+  font-size: clamp(28px, 4.8vw, 80px); /* modest boost with a safe cap */
+  line-height: 1.18;
+  letter-spacing: 0.55px;
+  word-break: break-word;
+}
+
+/* Slightly larger label text */
+.prompt-type {
+  font-size: 16px;
+}
+
+/* Images: allow a bit more height on big displays (but not too tall) */
+.prompt-content img {
+  max-height: 65vh; /* was 55vh */
+}
+@media (min-width: 1280px) {
+  .prompt-content img {
+    max-height: 72vh;
+  }
+}
