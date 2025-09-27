@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Score Tracker - Players and Teams</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Score Tracker</h1>
+      <div class="mode-controls">
+        <label><input type="radio" name="mode" value="solo" id="modeSolo" /> Solo</label>
+        <label><input type="radio" name="mode" value="team" id="modeTeam" checked /> Team</label>
+        <span class="divider"></span>
+        <label class="inline">
+          Award value:
+          <input type="number" id="awardValue" min="1" value="1" />
+        </label>
+        <label class="inline">
+          <input type="checkbox" id="useGamePointsAward" />
+          Use game points as award
+        </label>
+        <button id="resetGameBtn" title="Reset current game's scores">Reset Game Scores</button>
+        <button id="awardWinnersBtn" class="primary" title="Award overall points to winners and reset game scores">Award Winners</button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <aside class="sidebar">
+        <section class="panel">
+          <h2>Players (Overall)</h2>
+          <div class="controls">
+            <input type="text" id="newPlayerName" placeholder="New player name" />
+            <button id="addPlayerBtn">Add Player</button>
+          </div>
+          <div class="subcontrols">
+            <button id="resetAllOverallBtn" title="Set all overall scores to 0">Reset All Overall</button>
+            <button id="exportBtn" title="Export state to JSON">Export</button>
+            <label for="importFile" class="import-label">Import</label>
+            <input type="file" id="importFile" accept="application/json" />
+          </div>
+          <div id="playersList" class="list players-list"></div>
+        </section>
+      </aside>
+
+      <section class="content">
+        <section class="panel" id="soloPanel" hidden>
+          <h2>Solo Game</h2>
+          <p class="help">Toggle which players are active for this game. Adjust per-game scores below. Highest score wins when awarding.</p>
+          <div class="controls">
+            <label><input type="checkbox" id="soloToggleAll" /> Toggle All</label>
+          </div>
+          <div id="soloGameList" class="list game-list"></div>
+        </section>
+
+        <section class="panel" id="teamPanel">
+          <div class="panel-header">
+            <h2>Teams</h2>
+            <div class="controls">
+              <input type="text" id="newTeamName" placeholder="New team name" />
+              <button id="addTeamBtn">Add Team</button>
+              <button id="reshuffleBtn" title="Randomly distribute players into teams">Reshuffle Members</button>
+            </div>
+          </div>
+          <div class="teams-wrapper">
+            <div id="teamsList" class="teams-list"></div>
+            <div class="divider-vertical"></div>
+            <div class="panel">
+              <h3>Team Game</h3>
+              <p class="help">Adjust per-game team scores below. Highest score wins when awarding.</p>
+              <div id="teamGameList" class="list game-list"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <small>Data saved locally in your browser. Tip: Export regularly if you need a backup.</small>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
